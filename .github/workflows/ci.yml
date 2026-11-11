@@ -1,63 +1,73 @@
 name: Build & Deploy
 
+# main → ai.storeglance.com (prod), uat → uat-ai.storeglance.com (uat).
+#
+# Repository secrets: DEPLOY_HOST, SSH_DEPLOY_KEY, SSH_KNOWN_HOSTS (see Agent.API).
+# Optional: KENDO_UI_LICENSE — your Kendo UI license key; without it the build
+# still succeeds but Kendo components show a license notice.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   push:
-    branches: [ "main", "uat", "sit" ]
+    branches: [ "main", "uat" ]
   pull_request:
-    branches: [ "main", "uat", "sit" ]
+    branches: [ "main", "uat" ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build-and-deploy:
     name: Angular Build & Deploy
-    runs-on: self-hosted
-    env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
-      - name: Restore patched packages
-        run: git checkout -- node_modules/@progress/kendo-licensing/
-
-      - name: Build (Production)
-        if: github.ref == 'refs/heads/main'
-        run: npx ng build --configuration production
-
-      - name: Build (UAT)
-        if: github.ref == 'refs/heads/uat'
-        run: npx ng build --configuration uat
-
-      - name: Build (SIT)
-        if: github.ref == 'refs/heads/sit'
-        run: npx ng build --configuration sit
-
-      - name: Deploy to Production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Resolve environment
+        id: env
         run: |
-          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/ai.storeglance.com/web"
-          rsync -az --delete \
-            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/ai.storeglance.com/web/
-          echo "✅ Deployed to PRODUCTION (ai.storeglance.com)"
+          case "${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" in
+            main) echo "config=production" >> "$GITHUB_OUTPUT"; echo "host=ai.storeglance.com"     >> "$GITHUB_OUTPUT" ;;
+            *)    echo "config=uat"        >> "$GITHUB_OUTPUT"; echo "host=uat-ai.storeglance.com" >> "$GITHUB_OUTPUT" ;;
+          esac
 
-      - name: Deploy to UAT
-        if: github.event_name == 'push' && github.ref == 'refs/heads/uat'
-        run: |
-          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/uat-ai.storeglance.com/web"
-          rsync -az --delete \
-            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/uat-ai.storeglance.com/web/
-          echo "✅ Deployed to UAT (uat-ai.storeglance.com)"
+      - name: Build
+        env:
+          KENDO_UI_LICENSE: ${{ secrets.KENDO_UI_LICENSE }}
+        run: npx ng build --configuration ${{ steps.env.outputs.config }}
 
-      - name: Deploy to SIT
-        if: github.event_name == 'push' && github.ref == 'refs/heads/sit'
+      - name: Deploy
+        if: github.event_name != 'pull_request'
+        env:
+          KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          KNOWN: ${{ secrets.SSH_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          SITE: ${{ steps.env.outputs.host }}
         run: |
-          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/sit-ai.storeglance.com/web"
-          rsync -az --delete \
-            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/sit-ai.storeglance.com/web/
-          echo "✅ Deployed to SIT (sit-ai.storeglance.com)"
+          d="$RUNNER_TEMP/ssh"; mkdir -p "$d" && chmod 700 "$d"
+          printf '%s\n' "$KEY"   > "$d/key";  chmod 600 "$d/key"
+          printf '%s\n' "$KNOWN" > "$d/known_hosts"
+          O="-i $d/key -o IdentitiesOnly=yes -o UserKnownHostsFile=$d/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=20"
+          tar -czf - -C dist/agent.web/browser . | ssh $O "root@$HOST" "set -e
+            R=/var/www/$SITE
+            rm -rf \$R/web.next && mkdir -p \$R/web.next && tar -xzf - -C \$R/web.next
+            test -f \$R/web.next/index.html
+            chmod -R a+rX \$R/web.next
+            rm -rf \$R/web.previous; [ -d \$R/web ] && mv \$R/web \$R/web.previous; mv \$R/web.next \$R/web"
+          rm -rf "$d"
+          echo "Deployed web to $SITE"

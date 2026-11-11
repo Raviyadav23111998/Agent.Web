@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://sit-api.storeglance.com/api/agent'
+  apiUrl: 'https://sit-ai.storeglance.com/api'
 };
