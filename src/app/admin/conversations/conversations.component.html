@@ -1,0 +1,129 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>Conversations</h4>
+      <p class="text-muted">Browse all conversations across all users. Click to view messages.</p>
+    </div>
+    <div class="header-actions">
+      <span class="total-badge" *ngIf="total">{{ total }} total</span>
+      <button class="btn btn-primary" (click)="loadConversations()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <input class="filter-input search-input" type="text"
+           placeholder="Search by title..."
+           [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
+    <select class="filter-select" [(ngModel)]="filterSource" (change)="onFilterChange()">
+      <option value="">All Sources</option>
+      <option value="web">Web</option>
+      <option value="cli">CLI</option>
+      <option value="api">API</option>
+      <option value="bot">Bot</option>
+      <option value="cron">Cron</option>
+    </select>
+    <button class="btn btn-secondary" (click)="onSearch()">Search</button>
+  </div>
+
+  <div *ngIf="isLoading" class="skeleton-grid">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="skeleton-line w80"></div>
+      <div class="skeleton-line w40"></div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && conversations.length === 0">
+    <div class="empty-icon">💬</div>
+    <h5>No Conversations Found</h5>
+    <p class="text-muted">Try adjusting your search or filters.</p>
+  </div>
+
+  <div class="data-table-container" *ngIf="!isLoading && conversations.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>User</th>
+          <th>Source</th>
+          <th>Messages</th>
+          <th>Model</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let conv of conversations" (click)="openDetail(conv)" class="clickable-row">
+          <td class="title-cell">
+            <span class="conv-title">{{ conv.title || 'Untitled' }}</span>
+            <span class="conv-id text-muted">{{ conv.conversationId | slice:0:8 }}…</span>
+          </td>
+          <td>
+            <span class="user-badge">{{ conv.userId }}</span>
+          </td>
+          <td>
+            <span class="source-badge">{{ getSourceIcon(conv.source) }} {{ conv.source }}</span>
+          </td>
+          <td>
+            <span class="msg-count">{{ conv.messageCount }}</span>
+          </td>
+          <td class="text-muted">{{ conv.model || '—' }}</td>
+          <td class="text-muted">{{ timeAgo(conv.updatedAt) }}</td>
+          <td class="table-actions">
+            <button class="btn-icon" (click)="deleteConversation(conv, $event)" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" *ngIf="total > take">
+    <span class="pagination-info">Page {{ currentPage }} of {{ totalPages }} ({{ total }} total)</span>
+    <div class="pagination-buttons">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="skip === 0">← Prev</button>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="skip + take >= total">Next →</button>
+    </div>
+  </div>
+
+  <div class="detail-overlay" *ngIf="selectedConversation || isDetailLoading" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+
+      <div *ngIf="isDetailLoading" class="detail-loading">
+        <div class="skeleton-line w60"></div>
+        <div class="skeleton-line w40"></div>
+        <div class="skeleton-line w80"></div>
+      </div>
+
+      <ng-container *ngIf="selectedConversation && !isDetailLoading">
+        <div class="detail-header">
+          <div>
+            <h4>{{ selectedConversation.title || 'Untitled Conversation' }}</h4>
+            <div class="detail-meta">
+              <span>User: {{ selectedConversation.userId }}</span>
+              <span>Source: {{ selectedConversation.source }}</span>
+              <span>Model: {{ selectedConversation.model || 'default' }}</span>
+              <span>{{ selectedConversation.messages.length || 0 }} messages</span>
+            </div>
+          </div>
+          <button class="btn-icon" (click)="closeDetail()">✕</button>
+        </div>
+
+        <div class="messages-list">
+          <div class="message-item" *ngFor="let msg of selectedConversation.messages"
+               [ngClass]="'role-' + msg.role">
+            <div class="message-role">{{ msg.role }}</div>
+            <div class="message-content">{{ msg.content }}</div>
+            <div class="message-meta text-muted">
+              {{ timeAgo(msg.createdAt) }}
+              <span *ngIf="msg.tokenCount"> · {{ msg.tokenCount }} tokens</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

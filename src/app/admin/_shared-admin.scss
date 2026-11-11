@@ -1,0 +1,177 @@
+.page-container {
+  max-width: 1360px;
+  margin: 0 auto;          /* center within the padded content area (was left-hugging) */
+  width: 100%;
+  /* Opacity-only entrance. IMPORTANT: do NOT animate transform here — a
+     persisted transform (even translateY(0) via fill-mode) creates a containing
+     block that breaks position:fixed for modals/drawers rendered inside the
+     page (e.g. the Integrations slide-out editor was clipped mid-screen). */
+  animation: pageIn 0.28s ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-container { animation: none; }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--kendo-color-border);
+
+  h4 {
+    margin-bottom: 5px;
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: -0.4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--kendo-color-subtle);
+    line-height: 1.45;
+  }
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-card {
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg,
+    var(--kendo-color-base-subtle) 25%,
+    var(--kendo-color-base-subtle-hover) 50%,
+    var(--kendo-color-base-subtle) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  margin-bottom: 10px;
+
+  &.w40 { width: 40%; }
+  &.w60 { width: 60%; }
+  &.w80 { width: 80%; }
+  &.w100 { width: 100%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--kendo-color-subtle);
+
+  .empty-icon {
+    font-size: 2rem;
+    line-height: 1;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: var(--kendo-color-base-subtle);
+    border: 1px solid var(--kendo-color-border);
+  }
+
+  h5 {
+    color: var(--kendo-color-on-app-surface);
+    margin-bottom: 8px;
+  }
+
+  p { margin: 0; font-size: 0.88rem; }
+}
+
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+}
+
+.filter-input {
+  padding: 8px 14px;
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  background: var(--kendo-color-surface);
+  color: var(--kendo-color-on-app-surface);
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--kendo-color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kendo-color-primary) 10%, transparent);
+  }
+}
+
+.filter-select {
+  @extend .filter-input;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  color: var(--kendo-color-subtle);
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 8px;
+  background: var(--kendo-color-app-surface);
+  color: var(--kendo-color-on-app-surface);
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--kendo-color-primary);
+    color: var(--kendo-color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

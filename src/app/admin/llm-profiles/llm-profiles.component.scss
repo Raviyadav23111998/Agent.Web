@@ -1,0 +1,191 @@
+.llm-profiles-container {
+  max-width: 1400px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--kendo-color-border);
+
+  button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--kendo-color-subtle);
+    cursor: pointer;
+
+    &.active {
+      color: var(--kendo-color-primary);
+      border-bottom-color: var(--kendo-color-primary);
+    }
+    &:hover:not(.active) { color: var(--kendo-color-on-app-surface); }
+  }
+}
+
+.flash {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &.success { background: rgba(46, 160, 67, .12); color: #2ea043; }
+  &.error   { background: rgba(218, 54, 51, .12); color: #da3633; }
+  .flash-close { background: none; border: none; cursor: pointer; color: inherit; }
+}
+
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.profile-card {
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+
+  &.inactive { opacity: .55; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+
+    h3 { margin: 0 8px 0 0; font-size: 1rem; display: inline; }
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.83rem;
+    padding: 3px 0;
+    strong { color: var(--kendo-color-subtle); font-weight: 600; }
+    .mono { font-family: monospace; }
+  }
+}
+
+.section-title { margin: 8px 0 2px; }
+.section-hint {
+  font-size: 0.82rem;
+  color: var(--kendo-color-subtle);
+  margin-bottom: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.86rem;
+
+  th, td { text-align: left; padding: 10px 14px; }
+  thead th {
+    background: var(--kendo-color-base-subtle);
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  tbody tr { border-top: 1px solid var(--kendo-color-border); }
+  .row-actions { text-align: right; white-space: nowrap; }
+}
+
+.usage-controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+.form-select,
+input {
+  padding: 7px 10px;
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 8px;
+  background: var(--kendo-color-app-surface);
+  color: inherit;
+  font-size: 0.85rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  &:hover { background: var(--kendo-color-base-subtle); }
+  &.danger:hover { color: #da3633; }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  &.badge-primary  { background: rgba(59, 130, 246, .15); color: #3b82f6; }
+  &.badge-secondary{ background: var(--kendo-color-base-subtle); color: var(--kendo-color-subtle); }
+  &.badge-danger   { background: rgba(218, 54, 51, .12); color: #da3633; }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--kendo-color-app-surface);
+  border-radius: 14px;
+  padding: 26px 28px;
+  width: min(680px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+
+  h3 { margin: 0 0 18px; }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--kendo-color-subtle);
+  }
+  .span-2 { grid-column: span 2; }
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}

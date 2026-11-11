@@ -1,0 +1,24 @@
+<div class="chat-layout" [class.sidebar-collapsed]="!sidebarOpen">
+
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <app-chat-sidebar
+      (newChatClicked)="sidebarOpen && null"
+      (sidebarClose)="sidebarOpen = false">
+    </app-chat-sidebar>
+  </aside>
+
+  <main class="chat-main">
+
+    <app-chat-header
+      (toggleSidebar)="toggleSidebar()">
+    </app-chat-header>
+
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Global styled confirm dialog driven by ConfirmService -->
+  <app-confirm-host></app-confirm-host>
+
+</div>

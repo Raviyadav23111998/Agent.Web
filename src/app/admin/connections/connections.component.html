@@ -1,0 +1,155 @@
+<div class="connections-shell">
+
+  <div class="conn-tabs" role="tablist">
+    <button class="conn-tab" role="tab" [class.active]="surface === 'user'"
+            (click)="selectSurface('user')">
+      <span class="tab-icon">🔗</span><span class="tab-label">My Connections</span>
+    </button>
+    <button class="conn-tab" role="tab" *ngIf="isAdmin" [class.active]="surface === 'org'"
+            (click)="selectSurface('org')">
+      <span class="tab-icon">🏢</span><span class="tab-label">Organization</span>
+    </button>
+  </div>
+
+  <p class="surface-hint" *ngIf="surface === 'user'">
+    Connect the agent to your tools. Integrations marked 🏢 are set up centrally by an admin — just add your account.
+  </p>
+  <p class="surface-hint" *ngIf="surface === 'org'">
+    Organization credentials are shared defaults and app registrations (e.g. the Microsoft 365 app every user connects their mailbox to).
+  </p>
+
+  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
+
+  <app-empty-state *ngIf="!loading && visibleProviders.length === 0"
+                   icon="🔗" title="No integrations available"
+                   subtitle="No connectable providers are configured for this workspace yet.">
+  </app-empty-state>
+
+  <div class="provider-grid" *ngIf="!loading && visibleProviders.length > 0">
+    <div class="provider-card" *ngFor="let p of visibleProviders; trackBy: trackByProvider"
+         [class.connected]="connsFor(p.provider_key).length > 0">
+
+      <div class="card-top">
+        <span class="card-icon">{{ icon(p.provider_key) }}</span>
+        <span class="kind-badge" *ngIf="p.kind === 'shared_app'"
+              [class.ok]="isOrgAppConfigured(p.provider_key)"
+              [class.warn]="!isOrgAppConfigured(p.provider_key)">
+          {{ isOrgAppConfigured(p.provider_key) ? '🏢 Org app ready' : '🏢 Org app not set' }}
+        </span>
+      </div>
+
+      <h3 class="card-title">{{ p.display_name }}</h3>
+
+      <div class="cred-list" *ngIf="connsFor(p.provider_key).length > 0">
+        <div class="cred-item" *ngFor="let c of connsFor(p.provider_key); trackBy: trackByConn">
+          <div class="cred-info">
+            <span class="cred-label">{{ c.label }}
+              <span class="owner-chip" *ngIf="surface === 'org'">{{ ownerLabel(c) }}</span>
+              <span class="status-chip" [class.ok]="c.status === 'active'"
+                    [class.err]="c.status === 'error'">{{ c.status }}</span>
+            </span>
+            <span class="cred-meta" *ngIf="c.config_keys?.length">{{ c.config_keys.join(', ') }}</span>
+            <span class="test-msg" *ngIf="testResult[c.connection_id]"
+                  [class.ok]="testResult[c.connection_id].ok"
+                  [class.err]="!testResult[c.connection_id].ok">
+              {{ testResult[c.connection_id].message }}
+            </span>
+          </div>
+          <div class="cred-actions" *ngIf="!c.is_readonly">
+            <button class="btn-icon" *ngIf="providerSupportsVerify(c.provider_key)"
+                    (click)="test(c)" [disabled]="testing[c.connection_id]" title="Test connection">
+              <span *ngIf="!testing[c.connection_id]">▶</span>
+              <span *ngIf="testing[c.connection_id]" class="mini-spinner"></span>
+            </button>
+            <button class="btn-icon" (click)="openEdit(p, c)" title="Edit">✏️</button>
+            <button class="btn-icon" *ngIf="deleteConfirmId !== c.connection_id"
+                    (click)="confirmDelete(c.connection_id)" title="Delete">🗑️</button>
+            <span class="delete-confirm" *ngIf="deleteConfirmId === c.connection_id">
+              Delete?
+              <button class="btn-yes" (click)="executeDelete(c.connection_id)">Yes</button>
+              <button class="btn-no" (click)="cancelDelete()">No</button>
+            </span>
+          </div>
+          <span class="cred-managed" *ngIf="c.is_readonly">Managed by admin</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-add" (click)="openAdd(p)">
+          + {{ connsFor(p.provider_key).length > 0 ? 'Add another' : 'Add connection' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+<div class="modal-container" *ngIf="modalOpen">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-icon">{{ modalProvider ? icon(modalProvider.provider_key) : '' }}</span>
+      <div>
+        <h2>{{ modalMode === 'add' ? 'Add' : 'Edit' }} {{ modalProvider?.display_name }}</h2>
+        <p class="modal-subtitle">{{ surface === 'org' ? 'Organization credential' : 'Personal connection' }}</p>
+      </div>
+      <button class="btn-close" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <ng-container *ngIf="modalProvider?.kind === 'shared_app' && surface === 'user'">
+        <div class="note ok" *ngIf="isOrgAppConfigured(modalProvider!.provider_key)">
+          ✅ Your organization's app is configured by an admin. Just confirm the mailbox you want the agent to access — no app keys or secrets needed.
+        </div>
+        <div class="note warn" *ngIf="!isOrgAppConfigured(modalProvider!.provider_key)">
+          ⚠️ The {{ modalProvider?.display_name }} org app isn't set up yet. You can save your mailbox, but it won't work until an admin configures it under Organization.
+        </div>
+      </ng-container>
+
+      <div class="form-group" *ngIf="modalMode === 'add' && appTargetsAllowed">
+        <label>Applies to</label>
+        <select [(ngModel)]="orgTarget" (ngModelChange)="onTargetChange()">
+          <option value="org">Organization default (all apps)</option>
+          <option *ngFor="let a of apps" [value]="a.appUuid">App: {{ a.name }}</option>
+        </select>
+        <span class="hint">A per-app credential overrides the org default for that app/cron only.</span>
+        <div class="note ok" *ngIf="modalProvider?.kind === 'shared_app' && orgTarget !== 'org'">
+          ✅ This app reuses your organization's {{ modalProvider?.display_name }} app registration — just set the mailbox it should act on. No app keys or secrets needed.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Label</label>
+        <input type="text" [(ngModel)]="modalLabel" placeholder="e.g. Work account, Production">
+      </div>
+
+      <ng-container *ngFor="let f of modalFields">
+
+        <div class="form-group checkbox" *ngIf="!f.isSecret && f.schema.type === 'boolean'">
+          <label><input type="checkbox" [(ngModel)]="f.value"> {{ f.schema.label }}</label>
+        </div>
+
+        <div class="form-group" *ngIf="!f.isSecret && f.schema.type !== 'boolean'">
+          <label>{{ f.schema.label }}<span class="req" *ngIf="f.schema.required">*</span></label>
+          <input [type]="f.schema.type === 'number' ? 'number' : f.schema.type === 'email' ? 'email' : f.schema.type === 'url' ? 'url' : 'text'"
+                 [(ngModel)]="f.value" [placeholder]="f.schema.placeholder || ''">
+          <span class="hint" *ngIf="f.schema.help">{{ f.schema.help }}</span>
+        </div>
+
+        <div class="form-group" *ngIf="f.isSecret">
+          <label>🔒 {{ f.schema.label }}<span class="req" *ngIf="f.schema.required">*</span></label>
+          <input type="password" [(ngModel)]="f.value"
+                 [placeholder]="modalMode === 'edit' ? 'Leave empty to keep existing' : (f.schema.placeholder || 'Enter secret')">
+          <span class="hint">{{ f.schema.help || 'Encrypted at rest. Never returned by the API.' }}</span>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving…' : (modalMode === 'add' ? 'Save' : 'Update') }}
+      </button>
+    </div>
+  </div>
+</div>

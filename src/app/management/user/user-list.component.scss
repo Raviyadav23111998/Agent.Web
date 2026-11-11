@@ -1,0 +1,84 @@
+@import '../../admin/shared-admin';
+
+.clickable-row {
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(var(--kendo-color-primary-rgb, 44, 90, 160), 0.03) !important;
+  }
+}
+
+.user-code {
+  font-family: var(--kendo-font-family-monospace);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.user-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar-sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--kendo-color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.role-badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--kendo-color-primary) 8%, transparent);
+  color: var(--kendo-color-primary);
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--kendo-color-primary);
+  }
+}
+
+.sort-icon {
+  font-size: 0.72rem;
+  margin-left: 4px;
+  opacity: 0.5;
+}
+
+.skeleton-table {
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.skeleton-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--kendo-color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.pagination-page {
+  font-size: 0.82rem;
+  color: var(--kendo-color-subtle);
+  padding: 0 12px;
+}

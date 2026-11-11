@@ -1,0 +1,19 @@
+<div class="app-wrapper">
+
+  <ng-container *ngIf="!sharedDataService.isLoggedIn">
+    <router-outlet></router-outlet>
+  </ng-container>
+
+  <ng-container *ngIf="sharedDataService.isLoggedIn">
+    <router-outlet></router-outlet>
+  </ng-container>
+
+  <div class="global-loader-overlay" *ngIf="sharedDataService.ShowLoader | async">
+    <div class="loader-spinner">
+      <div class="spinner-ring"></div>
+    </div>
+  </div>
+
+  <app-copilot-panel *ngIf="sharedDataService.isLoggedIn"></app-copilot-panel>
+
+</div>

@@ -1,0 +1,374 @@
+<div class="apps-container">
+  <div class="header-section">
+    <h1>Applications</h1>
+    <p>Manage data isolation boundaries. Each application has its own knowledge base, bots, and cron jobs.</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading && !apps.length">
+    <div class="spinner"></div>
+    <span>Loading applications...</span>
+  </div>
+
+  <div class="content-section" *ngIf="!loading || apps.length">
+
+    <div class="apps-grid">
+
+      <div class="app-card create-card" (click)="showCreateForm()" *ngIf="!isCreating && !isEditing">
+        <div class="create-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+        <span class="create-label">New Application</span>
+      </div>
+
+      <div class="app-card" *ngFor="let app of apps"
+           [class.selected]="selectedApp?.appId === app.appId"
+           [class.inactive]="!app.isActive">
+        <div class="app-card-header">
+          <span class="app-type-icon">{{ getAppTypeIcon(app.appType) }}</span>
+          <div class="app-header-info">
+            <h3>{{ app.name }}</h3>
+            <span class="app-badge" [ngClass]="getAppTypeBadgeClass(app.appType)">{{ app.appType }}</span>
+          </div>
+          <div class="app-actions">
+            <button class="icon-btn edit-btn" (click)="editApp(app)" title="Edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn delete-btn" (click)="deleteApp(app)" [disabled]="deleting"
+                    title="Delete" *ngIf="app.appId > 1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="app-description">{{ app.description || 'No description' }}</p>
+
+        <div class="app-stats-row">
+          <div class="mini-stat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>{{ app.docCount }} docs</span>
+          </div>
+          <div class="mini-stat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path><rect x="9" y="8" width="6" height="6" rx="1"></rect><line x1="12" y1="14" x2="12" y2="22"></line></svg>
+            <span>{{ app.botCount }} bots</span>
+          </div>
+          <div class="mini-stat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>{{ app.cronCount }} crons</span>
+          </div>
+        </div>
+
+        <div class="app-credentials" *ngIf="getAppBindings(app.appId).length > 0">
+          <div class="cred-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Credentials
+          </div>
+          <div class="cred-chips">
+            <span class="cred-chip" *ngFor="let b of getAppBindings(app.appId)">
+              {{ getProviderIcon(b.provider_key) }} {{ b.label }}
+            </span>
+          </div>
+        </div>
+
+        <div class="app-footer">
+          <span class="app-id">ID: {{ app.appId }}</span>
+          <span class="status-dot" [class.active]="app.isActive" [class.inactive]="!app.isActive">
+            {{ app.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel" *ngIf="isCreating || isEditing">
+      <div class="panel-header">
+        <h3>{{ isEditing ? selectedApp?.name : 'Create Application' }}</h3>
+        <p>{{ isEditing ? 'Manage application configuration and personas.' : 'Configure a new application boundary.' }}</p>
+      </div>
+
+      <div class="tabs" *ngIf="isEditing">
+        <button class="tab-btn" [class.active]="activeTab === 'details'" (click)="activeTab = 'details'">App Details</button>
+        <button class="tab-btn" [class.active]="activeTab === 'personas'" (click)="activeTab = 'personas'">Personas</button>
+      </div>
+
+      <div class="tab-content" *ngIf="activeTab === 'details'">
+        <form [formGroup]="appForm" (ngSubmit)="saveApp()">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Application Name *</label>
+              <input type="text" formControlName="name" placeholder="e.g. Customer Support Bot">
+            </div>
+            <div class="form-group flex-1">
+              <label>Type *</label>
+              <select formControlName="appType" class="premium-select">
+                <option value="internal">Internal</option>
+                <option value="chatbot">Chatbot</option>
+                <option value="api">API</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="What does this application do?"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label>LLM Model Override</label>
+              <input type="text" formControlName="llmModel" placeholder="e.g. gpt-4o-mini">
+            </div>
+            <div class="form-group flex-1">
+              <label>Max Tokens/Day</label>
+              <input type="number" formControlName="maxTokensDay" min="0">
+            </div>
+            <div class="form-group flex-1">
+              <label>Max Documents</label>
+              <input type="number" formControlName="maxDocuments" min="0">
+            </div>
+          </div>
+
+          <div class="form-group checkbox-group" *ngIf="isEditing">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="isActive">
+              <span>Application is Active</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelForm()">Close</button>
+            <button type="submit" class="btn-primary glow-button" [disabled]="saving || appForm.invalid">
+              <span *ngIf="!saving">{{ isEditing ? 'Save Changes' : 'Create Application' }}</span>
+              <span *ngIf="saving" class="loading-text">Processing...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="tab-content" *ngIf="activeTab === 'personas'">
+
+        <div *ngIf="!isCreatingPersona && !isEditingPersona">
+          <div class="section-header-row">
+            <h4>Agent Personas</h4>
+            <button class="btn-primary btn-sm" (click)="showCreatePersonaForm()">+ Add Persona</button>
+          </div>
+
+          <div class="empty-state" *ngIf="personas.length === 0">
+            <p>No personas defined for this application.</p>
+          </div>
+
+          <div class="persona-list" *ngIf="personas.length > 0">
+            <div class="persona-card" *ngFor="let p of personas">
+              <div class="p-card-header">
+                <span class="p-name">{{ p.name }} <span class="badge" *ngIf="p.isDefault">Default</span></span>
+                <div class="p-actions">
+                  <button class="icon-btn edit-btn" (click)="editPersona(p)">Edit</button>
+                  <button class="icon-btn delete-btn" (click)="deletePersona(p)">Delete</button>
+                </div>
+              </div>
+              <p class="p-desc">{{ p.description }}</p>
+              <div class="p-meta">
+                <span>Tools: {{ (p.allowedTools && p.allowedTools.length) || 0 }}</span>
+                <span class="status-dot" [class.active]="p.isActive" [class.inactive]="!p.isActive">
+                  {{ p.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="persona-form-container" *ngIf="isCreatingPersona || isEditingPersona">
+          <div class="section-header-row">
+            <h4>{{ isEditingPersona ? 'Edit Persona' : 'New Persona' }}</h4>
+            <button class="btn-secondary btn-sm" (click)="cancelPersonaForm()">Back to List</button>
+          </div>
+
+          <form [formGroup]="personaForm" (ngSubmit)="savePersona()">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Persona Name *</label>
+                <input type="text" formControlName="name" placeholder="e.g. Code Agent">
+              </div>
+              <div class="form-group checkbox-group flex-1">
+                <label class="checkbox-label" style="margin-top: 30px;">
+                  <input type="checkbox" formControlName="isDefault">
+                  <span>Is Default for App</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" formControlName="description" placeholder="Short internal description">
+            </div>
+
+            <div class="form-group">
+              <label>Identity Prompt *</label>
+              <textarea formControlName="identityPrompt" rows="3" placeholder="Who are you? (e.g. You are a helpful assistant...)"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Constraints Prompt *</label>
+              <textarea formControlName="constraintsPrompt" rows="3" placeholder="What are your rules? (e.g. Do not run shell commands)"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Communication Prompt *</label>
+              <textarea formControlName="communicationPrompt" rows="2" placeholder="How do you speak? (e.g. Be concise and use markdown)"></textarea>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="disablePassivityCorrection">
+                <span>Disable Passivity Correction (Strict Mode)</span>
+              </label>
+              <small class="help-text">If checked, the agent will not be forced to retry if it refuses a task due to rules.</small>
+            </div>
+
+            <div class="form-group">
+              <label>User Approval (Human-in-the-Loop)</label>
+              <select formControlName="approvalMode" class="premium-select">
+                <option value="">Inherit global default</option>
+                <option value="irreversible">Ask before irreversible actions (send / shell / delete)</option>
+                <option value="off">Off — never ask</option>
+              </select>
+              <small class="help-text">Pauses the agent and asks the user to approve irreversible tool calls. Applies to interactive chats only — cron jobs and automated runs never ask.</small>
+            </div>
+
+            <div class="form-group checkbox-group" *ngIf="isEditingPersona">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="isActive">
+                <span>Persona is Active</span>
+              </label>
+            </div>
+
+            <div style="margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+              <h5 style="color: var(--accent); margin: 0;">Scope (Topic Rail)</h5>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="scopeRestrict">
+                <span>Restrict this persona to a specific domain</span>
+              </label>
+              <small class="help-text">When on, off-topic requests are refused <em>before</em> the model answers — the structural way to keep a copilot on its job. A prompt alone can be ignored; this cannot.</small>
+            </div>
+
+            <ng-container *ngIf="personaForm.get('scopeRestrict')?.value">
+              <div class="form-group">
+                <label>Domain <span style="color: var(--danger, #e5534b);">*</span></label>
+                <textarea formControlName="scopeDomain" rows="2" placeholder="e.g. Fleet Management: vehicles, drivers, staff, maintenance, routes — and driving the Fleet app on the user's behalf."></textarea>
+                <small class="help-text">One line describing what this persona may help with. Required when restriction is on.</small>
+              </div>
+
+              <div class="form-group">
+                <label>Refusal Message (optional)</label>
+                <textarea formControlName="scopeRefusal" rows="2" placeholder="Shown when a request is out of scope. Leave blank for a sensible default."></textarea>
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" formControlName="scopeFailOpen">
+                  <span>Allow the request if the scope check errors (fail-open)</span>
+                </label>
+                <small class="help-text">Recommended for brand controls (availability first). Turn off only for strict deployments that must never let an unclassified request through.</small>
+              </div>
+            </ng-container>
+
+            <div style="margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+              <h5 style="color: var(--accent); margin: 0;">Security Guardrails (Optional)</h5>
+            </div>
+
+            <div class="form-group">
+              <label>Input Guardrail Prompt</label>
+              <textarea formControlName="inputGuardrailPrompt" rows="2" placeholder="Hard boundary injected before user input (e.g. 'Only discuss Fleet Management.')"></textarea>
+              <small class="help-text">Injected into the system prompt as a non-negotiable security boundary.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Execution Policies</label>
+              <small class="help-text">Control which tools are actually allowed to run, evaluated before each tool call.</small>
+
+              <label class="checkbox-label" style="margin-top: 0.5rem;">
+                <input type="checkbox" [checked]="whitelistMode" (change)="toggleWhitelistMode()">
+                <span>Strict mode — only the tools enabled below can execute (blocks everything else, including tools added later)</span>
+              </label>
+
+              <div class="tools-grid" *ngIf="(personaForm.get('allowedTools')?.value || []).length; else noToolsForPolicy" style="margin-top: 0.75rem;">
+                <div class="tool-checkbox" *ngFor="let tool of personaForm.get('allowedTools')?.value">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [checked]="isToolExecutable(tool)" (change)="toggleToolExecutable(tool)">
+                    <span>{{ tool }}</span>
+                    <span *ngIf="toolHasArgRules(tool)" class="rules-badge" title="Has argument-level rules (edit in Advanced JSON)">rules</span>
+                  </label>
+                </div>
+              </div>
+              <ng-template #noToolsForPolicy>
+                <small class="help-text" style="display:block; margin-top: 0.5rem; opacity: 0.7;">Select Allowed Tools below first — then choose which of them may execute.</small>
+              </ng-template>
+
+              <a class="advanced-toggle" (click)="showAdvancedPolicy = !showAdvancedPolicy" style="display:inline-block; margin-top: 0.5rem; cursor:pointer;">
+                {{ showAdvancedPolicy ? '▾ Hide' : '▸ Advanced' }} JSON (argument-level rules)
+              </a>
+              <div *ngIf="showAdvancedPolicy" style="margin-top: 0.5rem;">
+                <textarea formControlName="executionPolicies" rows="4" placeholder='e.g. {"jira_update_ticket": {"status": {"$not_in": ["Closed"]}}}'></textarea>
+                <small class="help-text">IAM-style rules: $in, $not_in, $regex, $max_length, $deny, and "$mode": "whitelist". The checkboxes above edit this JSON.</small>
+                <small *ngIf="executionPolicyInvalid" class="help-text" style="color: var(--danger, #e5484d);">⚠ Invalid JSON — fix this or the checkboxes will reset it.</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Output DLP Patterns (JSON Array)</label>
+              <textarea formControlName="outputDlpPatterns" rows="3" placeholder='e.g. ["SCRUM-\\d+", "(?i)password\\s*[:=]\\s*\\S+"]'></textarea>
+              <small class="help-text">Regex patterns for deterministic response redaction.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Output Semantic Rules</label>
+              <textarea formControlName="outputSemanticRules" rows="2" placeholder="Natural-language rules for LLM filtering (e.g. 'Never reveal internal IP addresses.')"></textarea>
+              <small class="help-text">LLM-based filter applied before showing the response to the user.</small>
+            </div>
+
+            <div style="margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+              <h5 style="margin: 0;">Capabilities</h5>
+            </div>
+
+            <div class="form-group">
+              <label>Allowed Tools *</label>
+              <small class="help-text">Select which tools this persona is allowed to execute.</small>
+              <div class="tools-grid">
+                <div class="tool-checkbox" *ngFor="let tool of availableTools">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [checked]="hasTool(tool)" (change)="toggleTool(tool)">
+                    <span>{{ tool }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" (click)="cancelPersonaForm()">Cancel</button>
+              <button type="submit" class="btn-primary glow-button" [disabled]="saving || personaForm.invalid">
+                <span *ngIf="!saving">Save Persona</span>
+                <span *ngIf="saving" class="loading-text">Saving...</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

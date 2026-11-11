@@ -1,0 +1,100 @@
+<div class="chat-input-wrapper"
+     (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+
+  <!-- B2: queued-message chips shown above the composer while streaming -->
+  <div class="queued-banner" *ngIf="queuedCount > 0" role="status" aria-live="polite">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+    {{ queuedCount }} message{{ queuedCount > 1 ? 's' : '' }} queued — will send when the reply finishes
+  </div>
+
+  <!-- Capability warning: selected model can't read an attached type -->
+  <div class="attach-warning" *ngIf="warning" role="alert">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    {{ warning }}
+  </div>
+
+  <!-- Attachment preview strip -->
+  <div class="attach-strip" *ngIf="attachments.length > 0">
+    <div class="attach-chip" *ngFor="let a of attachments" [class.is-error]="a.error">
+      <img *ngIf="a.kind === 'image' && a.localUrl" class="attach-thumb" [src]="a.localUrl" [alt]="a.fileName"/>
+      <span *ngIf="a.kind !== 'image'" class="attach-glyph">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </span>
+      <span class="attach-name" [title]="a.fileName">{{ a.fileName }}</span>
+      <span class="attach-spin" *ngIf="a.uploading" aria-label="Uploading"></span>
+      <button class="attach-remove" *ngIf="!a.uploading" type="button"
+              (click)="removeAttachment(a)" aria-label="Remove attachment">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-input-container" [class.focused]="isFocused" [class.drag-over]="isDragOver">
+
+    <input #fileInput type="file" multiple hidden
+           accept="image/png,image/jpeg,image/gif,image/webp,application/pdf,audio/*,video/*"
+           (change)="onFilesSelected($event)"/>
+
+    <button class="btn-icon btn-attach" type="button" (click)="openFilePicker()"
+            title="Attach file" aria-label="Attach file">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </button>
+
+    <textarea #chatTextarea
+              [(ngModel)]="inputText"
+              (keydown)="onKeyDown($event)"
+              (input)="onInput()"
+              (paste)="onPaste($event)"
+              (focus)="isFocused = true"
+              (blur)="isFocused = false"
+              [placeholder]="isStreaming ? 'Reply is streaming — type to queue the next message…' : placeholder"
+              aria-label="Message input"
+              rows="1"></textarea>
+
+    <!-- While streaming, the action is Stop; a filled Send appears when there
+         is text (queues while streaming). -->
+    <button *ngIf="isStreaming && !inputText.trim()"
+            class="btn-action btn-stop" type="button"
+            (click)="onStop()" title="Stop generating" aria-label="Stop generating">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+      </svg>
+    </button>
+
+    <button *ngIf="!isStreaming || inputText.trim()"
+            class="btn-action"
+            [class.btn-send]="canSend"
+            type="button"
+            (click)="send()"
+            [disabled]="!canSend"
+            [title]="isStreaming ? 'Queue message' : 'Send message'"
+            [attr.aria-label]="isStreaming ? 'Queue message' : 'Send message'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="input-disclaimer">
+    AI agents can make mistakes. Verify important information.
+  </div>
+</div>

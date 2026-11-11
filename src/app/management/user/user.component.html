@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>{{ isEditMode ? 'Edit User' : 'New User' }}</h4>
+      <p class="text-muted">{{ isEditMode ? 'Update user details and permissions.' : 'Create a new platform user.' }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="navigateBack()">Cancel</button>
+      <button class="btn btn-primary" [disabled]="isSubmitting" (click)="onSubmit()">
+        {{ isSubmitting ? 'Saving...' : 'Save User' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-item" [class.active]="activeTab === 'details'" (click)="activeTab = 'details'">
+      Primary Details
+    </button>
+    <button class="tab-item" [class.active]="activeTab === 'attachments'" (click)="activeTab = 'attachments'"
+            *ngIf="isEditMode">
+      Attachments
+    </button>
+  </div>
+
+  <div class="form-card card" *ngIf="activeTab === 'details'">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="userCode">User Code <span class="required">*</span></label>
+          <input id="userCode" class="form-input" type="text" formControlName="userCode"
+                 placeholder="e.g. EMP001" autocomplete="off">
+          <div class="form-error" *ngIf="userForm.get('userCode')?.touched && userForm.get('userCode')?.hasError('required')">
+            User Code is required.
+          </div>
+          <div class="form-error" *ngIf="userForm.get('userCode')?.touched && userForm.get('userCode')?.hasError('codeTaken')">
+            User code is already in use.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fullName">Full Name <span class="required">*</span></label>
+          <input id="fullName" class="form-input" type="text" formControlName="fullName"
+                 placeholder="e.g. John Smith">
+          <div class="form-error" *ngIf="userForm.get('fullName')?.touched && userForm.get('fullName')?.invalid">
+            Full Name is required.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="email">Email <span class="required">*</span></label>
+          <input id="email" class="form-input" type="email" formControlName="email"
+                 placeholder="e.g. john@company.com">
+          <div class="form-error" *ngIf="userForm.get('email')?.touched && userForm.get('email')?.hasError('required')">
+            Valid Email is required.
+          </div>
+          <div class="form-error" *ngIf="userForm.get('email')?.touched && userForm.get('email')?.hasError('emailTaken')">
+            Email is already in use.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="mobile">Mobile</label>
+          <input id="mobile" class="form-input" type="text" formControlName="mobile"
+                 placeholder="e.g. +1 555-123-4567">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="roleId">Role <span class="required">*</span></label>
+          <select id="roleId" class="form-select" formControlName="roleId">
+            <option [ngValue]="null" disabled>Select a role...</option>
+            <option *ngFor="let role of roles" [ngValue]="role.value">{{ role.text }}</option>
+          </select>
+          <div class="form-error" *ngIf="userForm.get('roleId')?.touched && userForm.get('roleId')?.invalid">
+            Role is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            Password <span class="required" *ngIf="!isEditMode">*</span>
+          </label>
+          <input id="password" class="form-input" type="password" formControlName="password"
+                 [placeholder]="isEditMode ? 'Leave blank to keep current' : 'Min 6 characters'">
+          <div class="form-error" *ngIf="userForm.get('password')?.touched && userForm.get('password')?.invalid">
+            Password is required (min 6 chars).
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" formControlName="isActive">
+            <span class="checkbox-label">Active</span>
+            <span class="checkbox-help text-muted">User can log in and access the platform</span>
+          </label>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <div class="form-card card" *ngIf="activeTab === 'attachments' && isEditMode">
+    <div class="attachments-placeholder">
+      <div class="empty-icon">📎</div>
+      <p class="text-muted">File attachments are managed through the API.</p>
+    </div>
+  </div>
+</div>

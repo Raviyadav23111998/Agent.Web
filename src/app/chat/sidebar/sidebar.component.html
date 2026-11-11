@@ -1,0 +1,86 @@
+<div class="sidebar-inner">
+
+  <div class="sidebar-brand">
+    <img class="brand-logo" [src]="tenantConfig.getLogoUrl()"
+         [alt]="tenantConfig.getOrgName() || 'Agent'"
+         onerror="this.onerror=null;this.src='assets/images/LOGO.png';" />
+    <span class="brand-text">{{ tenantConfig.getOrgName() || 'Agent' }}</span>
+  </div>
+
+  <div class="sidebar-header">
+    <button class="btn-new-chat" (click)="newChat()">
+      <app-icon name="plus"></app-icon>
+      <span>New Chat</span>
+    </button>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="search-wrapper">
+      <app-icon class="search-icon" name="search"></app-icon>
+      <input type="text"
+             aria-label="Search conversations"
+             placeholder="Search conversations..."
+             [(ngModel)]="searchQuery"
+             (ngModelChange)="onSearchChange()"/>
+    </div>
+  </div>
+
+  <div class="sidebar-conversations">
+
+    <div class="empty-state" *ngIf="filteredConversations.length === 0">
+      <p>No conversations yet</p>
+      <span>Start a new chat to begin</span>
+    </div>
+
+    <ng-container *ngIf="todayConvs.length > 0">
+      <div class="date-group-label">Today</div>
+      <ng-container *ngFor="let conv of todayConvs">
+        <ng-container *ngTemplateOutlet="convItem; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="yesterdayConvs.length > 0">
+      <div class="date-group-label">Yesterday</div>
+      <ng-container *ngFor="let conv of yesterdayConvs">
+        <ng-container *ngTemplateOutlet="convItem; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="weekConvs.length > 0">
+      <div class="date-group-label">Previous 7 Days</div>
+      <ng-container *ngFor="let conv of weekConvs">
+        <ng-container *ngTemplateOutlet="convItem; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="olderConvs.length > 0">
+      <div class="date-group-label">Older</div>
+      <ng-container *ngFor="let conv of olderConvs">
+        <ng-container *ngTemplateOutlet="convItem; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <div class="sidebar-footer">
+    <app-profile-menu></app-profile-menu>
+  </div>
+
+</div>
+
+<ng-template #convItem let-conv>
+  <div class="conv-item"
+       role="button"
+       tabindex="0"
+       [class.active]="conv.conversationId === activeConversationId"
+       [attr.aria-current]="conv.conversationId === activeConversationId ? 'page' : null"
+       (click)="selectConversation(conv)"
+       (keydown.enter)="selectConversation(conv)"
+       (keydown.space)="$event.preventDefault(); selectConversation(conv)">
+    <app-icon class="conv-icon" name="message"></app-icon>
+    <div class="conv-title">{{ conv.title || 'New conversation' }}</div>
+    <button class="conv-delete" (click)="deleteConversation($event, conv)"
+            aria-label="Delete conversation" title="Delete">
+      <app-icon name="trash"></app-icon>
+    </button>
+  </div>
+</ng-template>

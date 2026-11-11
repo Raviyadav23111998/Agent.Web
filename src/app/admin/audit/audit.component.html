@@ -1,0 +1,95 @@
+<div class="audit-container">
+  <app-page-header title="Audit Log"
+                   subtitle="Every side-effecting tool action the agent took, with status and approval.">
+    <button class="btn btn-secondary" (click)="loadSummary(); load()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle;">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Refresh
+    </button>
+  </app-page-header>
+
+  <!-- summary tiles -->
+  <div class="audit-summary" *ngIf="summary">
+    <div class="stat-tile">
+      <span class="stat-value">{{ summary.total | number }}</span>
+      <span class="stat-label">Total actions</span>
+    </div>
+    <div class="stat-tile" *ngFor="let s of summary.by_status | keyvalue">
+      <span class="stat-value" [ngClass]="statusClass(s.key)">{{ s.value | number }}</span>
+      <span class="stat-label">{{ s.key }}</span>
+    </div>
+  </div>
+
+  <!-- filters -->
+  <div class="audit-filters">
+    <input class="form-control" [(ngModel)]="fTool" (keyup.enter)="applyFilters()"
+           placeholder="Filter by tool name…" aria-label="Filter by tool name" />
+    <select class="form-control" [(ngModel)]="fStatus" (change)="applyFilters()" aria-label="Status">
+      <option *ngFor="let s of statuses" [value]="s">{{ s || 'All statuses' }}</option>
+    </select>
+    <select class="form-control" [(ngModel)]="fSideEffect" (change)="applyFilters()" aria-label="Side effect">
+      <option *ngFor="let se of sideEffects" [value]="se">{{ se || 'All effects' }}</option>
+    </select>
+    <button class="btn btn-primary" (click)="applyFilters()">Apply</button>
+    <button class="btn btn-secondary" *ngIf="hasFilters" (click)="clearFilters()">Clear</button>
+  </div>
+
+  <!-- states -->
+  <app-skeleton *ngIf="loading" [rows]="6"></app-skeleton>
+
+  <app-empty-state *ngIf="loadError && !loading"
+                   icon="⚠️" title="Couldn't load the audit log"
+                   subtitle="Something went wrong reaching the server.">
+    <button class="btn btn-secondary" (click)="load()">Try again</button>
+  </app-empty-state>
+
+  <app-empty-state *ngIf="!loading && !loadError && entries.length === 0"
+                   icon="📋"
+                   [title]="hasFilters ? 'No matching actions' : 'No audited actions yet'"
+                   [subtitle]="hasFilters ? 'Try widening or clearing the filters.' : 'Side-effecting tool calls will appear here as the agent runs.'">
+    <button class="btn btn-secondary" *ngIf="hasFilters" (click)="clearFilters()">Clear filters</button>
+  </app-empty-state>
+
+  <!-- table -->
+  <div class="audit-table-wrap" *ngIf="!loading && !loadError && entries.length > 0">
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Tool</th>
+          <th>Effect</th>
+          <th>Details</th>
+          <th>Approval</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of entries">
+          <td class="mono nowrap">{{ e.createdAt | date:'short' }}</td>
+          <td><code class="tool">{{ e.toolName }}</code></td>
+          <td><span class="effect effect-{{ e.sideEffect }}">{{ e.sideEffect }}</span></td>
+          <td class="args" [title]="e.argsSummary">{{ e.argsSummary }}</td>
+          <td>
+            <span *ngIf="e.approved === true" class="pill ok">approved</span>
+            <span *ngIf="e.approved === false" class="pill err">denied</span>
+            <span *ngIf="e.approved === null" class="pill muted">—</span>
+          </td>
+          <td><span class="status" [ngClass]="statusClass(e.status)">{{ e.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- pagination -->
+    <div class="audit-pager">
+      <span class="pager-info">
+        {{ skip + 1 }}–{{ skip + entries.length }} of {{ total | number }}
+      </span>
+      <div class="pager-btns">
+        <button class="btn btn-secondary" (click)="prev()" [disabled]="skip <= 0">Prev</button>
+        <span class="pager-page">Page {{ page }} / {{ pageCount }}</span>
+        <button class="btn btn-secondary" (click)="next()" [disabled]="skip + take >= total">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

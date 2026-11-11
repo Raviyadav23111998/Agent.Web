@@ -1,0 +1,8 @@
+{
+  "Message": {
+    "login_successful": "लॉगिन सफल",
+    "invalid_password": "अमान्य पासवर्ड",
+    "invalid_username": "अमान्य उपयोगकर्ता नाम",
+    "account_disabled": "खाता अक्षम किया गया"
+  }
+}

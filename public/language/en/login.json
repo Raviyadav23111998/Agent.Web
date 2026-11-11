@@ -1,0 +1,16 @@
+{
+  "Login": {
+    "invalid_credentials": "Please enter valid credentials",
+    "login_successful": "Login Successful",
+    "invalid_password": "Invalid Password",
+    "invalid_username": "Invalid Username",
+    "account_disabled": "Account Disabled",
+    "sign_in": "Sign In",
+    "sign_in_microsoft": "Sign in with Microsoft",
+    "sign_in_google": "Sign in with Google",
+    "username_placeholder": "Username",
+    "password_placeholder": "Password",
+    "forgot_password": "Forgot password?",
+    "powered_by": "Powered by"
+  }
+}

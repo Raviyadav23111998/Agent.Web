@@ -1,0 +1,236 @@
+<div class="llm-profiles-container">
+  <app-page-header title="Models &amp; Budgets"
+                   subtitle="Bind applications and users to model profiles, cap usage per scope, and see where tokens go.">
+    <button class="btn btn-secondary" *ngIf="tab === 'budgets'" (click)="openBudgetEditor()">New Budget</button>
+    <button class="btn btn-primary" *ngIf="tab === 'profiles'" (click)="openEditor()">New Profile</button>
+  </app-page-header>
+
+  <div class="tabs">
+    <button [class.active]="tab === 'profiles'" (click)="setTab('profiles')">Model Profiles</button>
+    <button [class.active]="tab === 'budgets'" (click)="setTab('budgets')">Budgets</button>
+    <button [class.active]="tab === 'usage'" (click)="setTab('usage')">Usage</button>
+  </div>
+
+  <div class="flash success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="flash error" *ngIf="errorMessage">{{ errorMessage }}
+    <button class="flash-close" (click)="errorMessage = ''">✕</button>
+  </div>
+
+  <app-skeleton *ngIf="isLoading" [rows]="4"></app-skeleton>
+  <app-empty-state *ngIf="loadError && !isLoading" icon="⚠️" title="Couldn't load model profiles"
+                   subtitle="Something went wrong reaching the server.">
+    <button class="btn btn-secondary" (click)="load()">Try again</button>
+  </app-empty-state>
+
+  <!-- ═══ PROFILES ═══ -->
+  <ng-container *ngIf="tab === 'profiles' && !isLoading && !loadError">
+    <div class="profiles-grid">
+      <div class="profile-card" *ngFor="let p of profiles" [class.inactive]="!p.is_active">
+        <div class="card-header">
+          <div>
+            <h3>{{ p.name }}</h3>
+            <span class="badge badge-primary" *ngIf="p.is_default">Default</span>
+            <span class="badge badge-secondary" *ngIf="!p.is_active">Disabled</span>
+          </div>
+          <div class="card-actions">
+            <button class="icon-btn" (click)="openEditor(p)" title="Edit">✎</button>
+            <button class="icon-btn danger" *ngIf="!p.is_default" (click)="deleteProfile(p)" title="Delete">🗑</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="info-row"><strong>Provider</strong><span>{{ p.provider }}</span></div>
+          <div class="info-row"><strong>Model</strong><span class="mono">{{ p.model }}</span></div>
+          <div class="info-row" *ngIf="p.fallback_model"><strong>Fallback</strong><span class="mono">{{ p.fallback_model }}</span></div>
+          <div class="info-row" *ngIf="p.reasoning_effort"><strong>Reasoning</strong><span>{{ p.reasoning_effort }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="section-title">Application bindings</h4>
+    <p class="section-hint">Each application runs on its bound profile; unbound apps inherit the default. Users can be bound from User Management.</p>
+    <table class="data-table" *ngIf="apps.length > 0">
+      <thead><tr><th>Application</th><th>Model profile</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let app of apps">
+          <td>{{ app.name }}</td>
+          <td>
+            <select class="form-select" #sel
+                    [value]="(app.llmProfileId ?? '') + ''"
+                    (change)="bindApp(app, sel.value)">
+              <option value="">Inherit default</option>
+              <option *ngFor="let p of profiles" [value]="p.profile_id"
+                      [disabled]="!p.is_active">{{ p.name }} — {{ p.model }}</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <!-- ═══ BUDGETS ═══ -->
+  <ng-container *ngIf="tab === 'budgets' && !isLoading && !loadError">
+    <app-empty-state *ngIf="budgets.length === 0" icon="🛡️" title="No budgets yet"
+                     subtitle="Cap tokens or spend per user, per application, or for the whole organization — like Claude's plan limits.">
+      <button class="btn btn-primary" (click)="openBudgetEditor()">New Budget</button>
+    </app-empty-state>
+    <table class="data-table" *ngIf="budgets.length > 0">
+      <thead><tr><th>Scope</th><th>Window</th><th>Token cap</th><th>$ cap</th><th>On limit</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let b of budgets">
+          <td>{{ scopeLabel(b) }}</td>
+          <td>{{ b.win }}</td>
+          <td>{{ b.max_tokens > 0 ? (b.max_tokens | number) : '—' }}</td>
+          <td>{{ b.max_usd > 0 ? ('$' + b.max_usd) : '—' }}</td>
+          <td><span class="badge" [ngClass]="b.action === 'block' ? 'badge-danger' : 'badge-secondary'">{{ b.action }}</span></td>
+          <td class="row-actions">
+            <button class="icon-btn" (click)="openBudgetEditor(b)" title="Edit">✎</button>
+            <button class="icon-btn danger" (click)="deleteBudget(b)" title="Remove">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <!-- ═══ USAGE ═══ -->
+  <ng-container *ngIf="tab === 'usage' && !loadError">
+    <div class="usage-controls">
+      <label>Group by
+        <select class="form-select" [(ngModel)]="usageGroupBy" (change)="loadUsage()">
+          <option value="user">User</option>
+          <option value="app">Application</option>
+          <option value="model">Model</option>
+          <option value="day">Day</option>
+        </select>
+      </label>
+      <label>Last
+        <select class="form-select" [(ngModel)]="usageDays" (change)="loadUsage()">
+          <option [ngValue]="7">7 days</option>
+          <option [ngValue]="30">30 days</option>
+          <option [ngValue]="90">90 days</option>
+        </select>
+      </label>
+    </div>
+    <app-skeleton *ngIf="usageLoading" [rows]="4"></app-skeleton>
+    <app-empty-state *ngIf="!usageLoading && usageRows.length === 0" icon="📈" title="No usage recorded yet"
+                     subtitle="Every model call lands here once the ledger is live."></app-empty-state>
+    <table class="data-table" *ngIf="!usageLoading && usageRows.length > 0">
+      <thead><tr><th>{{ usageGroupBy | titlecase }}</th><th>Calls</th><th>Prompt</th><th>Completion</th><th>Cached</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of usageRows">
+          <td>{{ usageGrpLabel(r) }}</td>
+          <td>{{ r.calls | number }}</td>
+          <td>{{ r.prompt_tokens | number }}</td>
+          <td>{{ r.completion_tokens | number }}</td>
+          <td>{{ r.cached_tokens | number }}</td>
+          <td>${{ r.cost_usd }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <!-- ═══ PROFILE EDITOR (rendered via FormDialogService at shell root) ═══ -->
+  <ng-template #profileTpl>
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <div class="form-grid">
+        <label>Name <input formControlName="name" placeholder="coding-glm" [readOnly]="editing?.is_default"></label>
+        <label>Provider
+          <select formControlName="provider" class="form-select" (change)="onProviderChange()">
+            <option value="" disabled>Select provider…</option>
+            <option *ngFor="let pr of providerPresets" [value]="pr.value">{{ pr.label }}</option>
+          </select>
+        </label>
+        <label>Model
+          <ng-container *ngIf="!modelCustom; else modelInput">
+            <select class="form-select" #modelSel
+                    [value]="profileForm.value.model || ''"
+                    (change)="onModelSelect(modelSel.value)">
+              <option value="" disabled>Select model…</option>
+              <option *ngFor="let m of modelOptions()" [value]="m">{{ m }}</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+          </ng-container>
+          <ng-template #modelInput>
+            <input formControlName="model" placeholder="model id, e.g. glm-5.2">
+          </ng-template>
+        </label>
+        <label class="span-2">Base URL <input formControlName="base_url" placeholder="https://api…/v1/chat/completions"></label>
+        <label class="span-2">API key <input formControlName="api_key" type="password"
+               [placeholder]="editing ? '(unchanged)' : 'sk-…'"></label>
+        <label>Fallback model
+          <ng-container *ngIf="!fallbackCustom; else fallbackInput">
+            <select class="form-select" #fbSel
+                    [value]="profileForm.value.fallback_model || ''"
+                    (change)="onFallbackSelect(fbSel.value)">
+              <option value="">None (no fallback)</option>
+              <option *ngFor="let m of modelOptions()" [value]="m">{{ m }}</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+          </ng-container>
+          <ng-template #fallbackInput>
+            <input formControlName="fallback_model" placeholder="model id">
+          </ng-template>
+        </label>
+        <label>Reasoning effort
+          <select formControlName="reasoning_effort" class="form-select">
+            <option value="">provider default</option>
+            <option value="off">off</option><option value="low">low</option>
+            <option value="medium">medium</option><option value="high">high</option>
+          </select>
+        </label>
+        <label>Temperature <input formControlName="temperature" type="number" step="0.1" min="0" max="2"></label>
+        <label>Max tokens <input formControlName="max_tokens" type="number" min="256"></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="formDialog.close()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+          {{ isSaving ? 'Saving…' : 'Save profile' }}</button>
+      </div>
+    </form>
+  </ng-template>
+
+  <!-- ═══ BUDGET EDITOR (rendered via FormDialogService at shell root) ═══ -->
+  <ng-template #budgetTpl>
+    <form [formGroup]="budgetForm" (ngSubmit)="saveBudget()">
+      <div class="form-grid">
+        <label>Scope
+          <select formControlName="scope_type" class="form-select">
+            <option value="user">User</option>
+            <option value="app">Application</option>
+            <option value="tenant">Whole organization</option>
+          </select>
+        </label>
+        <label *ngIf="budgetForm.value.scope_type === 'app'">Application
+          <select formControlName="scope_id" class="form-select">
+            <option [ngValue]="null">Select…</option>
+            <option *ngFor="let a of apps" [ngValue]="a.appId">{{ a.name }}</option>
+          </select>
+        </label>
+        <label *ngIf="budgetForm.value.scope_type === 'user'">User
+          <select *ngIf="users.length > 0" formControlName="scope_id" class="form-select">
+            <option [ngValue]="null">Select…</option>
+            <option *ngFor="let u of users" [ngValue]="u.userId">{{ u.name || u.email || ('#' + u.userId) }}</option>
+          </select>
+          <input *ngIf="users.length === 0" formControlName="scope_id" type="number" min="1" placeholder="user id, e.g. 5">
+        </label>
+        <label>Window
+          <select formControlName="win" class="form-select">
+            <option value="day">Daily</option><option value="week">Weekly</option>
+            <option value="month">Monthly</option>
+          </select>
+        </label>
+        <label>Token cap (0 = none) <input formControlName="max_tokens" type="number" min="0"></label>
+        <label>$ cap (0 = none) <input formControlName="max_usd" type="number" min="0" step="0.5"></label>
+        <label>On limit
+          <select formControlName="action" class="form-select">
+            <option value="block">Block until reset</option>
+            <option value="warn">Warn only (log)</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="formDialog.close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save budget</button>
+      </div>
+    </form>
+  </ng-template>
+</div>

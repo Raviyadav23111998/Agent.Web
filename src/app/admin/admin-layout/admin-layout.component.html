@@ -1,0 +1,89 @@
+<div class="admin-shell" [class.sidebar-collapsed]="sidebarCollapsed">
+
+  <div class="mobile-overlay"
+       *ngIf="mobileMenuOpen"
+       (click)="closeMobileMenu()"></div>
+
+  <aside class="admin-sidebar" [class.mobile-open]="mobileMenuOpen">
+
+    <div class="sidebar-brand">
+      <img class="brand-logo" [src]="tenantConfig.getLogoUrl()"
+           [alt]="tenantConfig.getOrgName() || 'Admin'"
+           onerror="this.onerror=null;this.src='assets/images/LOGO.png';" />
+      <span class="brand-text" *ngIf="!sidebarCollapsed">{{ tenantConfig.getOrgName() || 'Admin' }}</span>
+    </div>
+
+    <button class="back-to-chat" (click)="goToChat()"
+            aria-label="Back to chat"
+            [title]="sidebarCollapsed ? 'Back to Chat' : ''">
+      <app-icon class="nav-icon" name="arrow-left"></app-icon>
+      <span class="nav-label" *ngIf="!sidebarCollapsed">Back to Chat</span>
+    </button>
+
+    <nav class="sidebar-nav" aria-label="Admin">
+      <div class="nav-group" *ngFor="let group of navGroups">
+        <div class="nav-group-title" *ngIf="!sidebarCollapsed">{{ group.title }}</div>
+        <div class="nav-group-divider" *ngIf="sidebarCollapsed"></div>
+
+        <button class="nav-item"
+                *ngFor="let item of group.items"
+                [class.active]="isActive(item.route)"
+                [attr.aria-current]="isActive(item.route) ? 'page' : null"
+                (click)="navigateTo(item.route)"
+                [title]="sidebarCollapsed ? item.label : ''">
+          <app-icon class="nav-icon" [name]="item.icon"></app-icon>
+          <span class="nav-label" *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+          <span class="nav-badge" *ngIf="item.badge && !sidebarCollapsed">{{ item.badge }}</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-user" *ngIf="!sidebarCollapsed">
+        <div class="admin-avatar">{{ initials }}</div>
+        <div class="admin-info">
+          <span class="admin-name">{{ displayName }}</span>
+          <span class="admin-role">{{ activeSession?.role || 'Admin' }}</span>
+        </div>
+      </div>
+      <div class="admin-avatar admin-avatar-only" *ngIf="sidebarCollapsed" [title]="displayName">
+        {{ initials }}
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="topbar-menu-btn" (click)="toggleSidebar()"
+                aria-label="Toggle navigation">
+          <app-icon name="panel-left"></app-icon>
+        </button>
+        <div class="breadcrumb" aria-label="Breadcrumb">
+          <span class="breadcrumb-root">Admin</span>
+          <app-icon class="breadcrumb-sep" name="chevron-right"></app-icon>
+          <span class="breadcrumb-page">{{ pageTitle }}</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <app-admin-search></app-admin-search>
+        <button class="topbar-action chat-btn" (click)="goToChat()" title="Switch to Chat">
+          <app-icon name="message"></app-icon>
+          <span>Chat</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- Global styled confirm dialog driven by ConfirmService -->
+  <app-confirm-host></app-confirm-host>
+  <!-- Global form dialog driven by FormDialogService -->
+  <app-form-dialog-host></app-form-dialog-host>
+
+</div>

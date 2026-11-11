@@ -1,0 +1,298 @@
+<div class="knowledge-container" [class.modal-open]="selectedDoc">
+  <div class="header-section">
+    <h1>Neural Knowledge Base</h1>
+    <p>Explore, manage, and expand the agent's vectorized intelligence.</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading && !documents.length">
+    <div class="spinner"></div>
+    <span>Synchronizing neural pathways...</span>
+  </div>
+
+  <div class="content-section" *ngIf="!loading || documents.length">
+    <!-- Stats Dashboard -->
+    <div class="stats-dashboard" *ngIf="stats">
+      <div class="stat-card">
+        <div class="stat-icon pulse-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total Documents</span>
+          <span class="stat-value">{{ stats.total }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon check-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Neural Indexed</span>
+          <span class="stat-value">{{ stats.indexed }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon grid-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total Tokens</span>
+          <span class="stat-value">{{ stats.total_tokens | number }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingestion Health (live per-store probe + indexing coverage) -->
+    <div class="health-panel" *ngIf="health || healthLoading">
+      <div class="health-header">
+        <h3>
+          Ingestion Health
+          <span class="health-badge" *ngIf="health" [ngClass]="'h-' + health.status">{{ health.status }}</span>
+        </h3>
+        <button class="health-refresh" (click)="loadHealth()" [disabled]="healthLoading">
+          {{ healthLoading ? 'Checking…' : '↻ Recheck' }}
+        </button>
+      </div>
+      <div class="health-grid" *ngIf="health">
+        <div class="health-card" *ngFor="let key of pillarKeys" [ngClass]="'h-' + health.components[key].status">
+          <div class="health-card-top">
+            <span class="health-dot"></span>
+            <span class="health-name">{{ pillarLabels[key] }}</span>
+            <span class="health-state">{{ health.components[key].status.replace('_', ' ') }}</span>
+          </div>
+          <div class="health-detail" [ngSwitch]="key">
+            <span *ngSwitchCase="'document_store'">{{ health.components[key].documents }} documents</span>
+            <span *ngSwitchCase="'lexical'">{{ health.components[key].indexed_ok || 0 }}/{{ health.documents }} indexed · ES {{ health.components[key].es_docs || 0 }}</span>
+            <span *ngSwitchCase="'vector'">{{ health.components[key].embedded_ok || 0 }}/{{ health.documents }} embedded · {{ health.components[key].model }} ({{ health.components[key].dim }}d)</span>
+            <span *ngSwitchCase="'graph'">{{ health.components[key].indexed_ok || 0 }}/{{ health.documents }} in graph</span>
+          </div>
+          <div class="health-sub" *ngIf="health.components[key].pending">{{ health.components[key].pending }} healing…</div>
+          <div class="health-err" *ngIf="health.components[key].error" [title]="health.components[key].error">{{ health.components[key].error }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Columns Grid -->
+    <div class="workspace-grid">
+      <!-- Document List Panel (Left/Main) -->
+      <div class="workspace-panel docs-panel">
+        <div class="panel-header flex-header">
+          <div>
+            <h3>Indexed Documents</h3>
+            <p>Knowledge available to the agent.</p>
+          </div>
+          
+          <div class="docs-filters">
+            <div class="docs-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" placeholder="Search documents or owner..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
+            </div>
+
+            <select class="type-filter app-filter" *ngIf="isAdmin" [(ngModel)]="appFilter" (ngModelChange)="onAppFilterChange()">
+              <option [ngValue]="null">All Applications</option>
+              <option *ngFor="let app of apps" [ngValue]="app.appId">{{ app.name }}</option>
+            </select>
+
+            <select class="type-filter" [(ngModel)]="typeFilter" (ngModelChange)="onSearchChange()">
+              <option value="all">All Types</option>
+              <option value="document">Document</option>
+              <option value="code">Code</option>
+              <option value="note">Note</option>
+              <option value="email">Email</option>
+              <option value="wiki">Wiki</option>
+              <option value="api_doc">API Doc</option>
+            </select>
+
+            <button type="button" class="btn-primary add-doc-btn" (click)="openIngest()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Document
+            </button>
+          </div>
+        </div>
+
+        <div class="empty-docs" *ngIf="!filteredDocuments.length">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <h4>No documents found</h4>
+          <p>No knowledge entries match your search.</p>
+        </div>
+
+        <div class="docs-table-wrapper" *ngIf="filteredDocuments.length">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Title & Source</th>
+                <th>Type</th>
+                <th *ngIf="isAdmin">Application</th>
+                <th>Owner</th>
+                <th>Tokens</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of paginatedDocuments">
+                <td class="td-title">
+                  <span class="doc-title" [title]="doc.title || doc.sourcePath || doc.source_path">{{ doc.title || 'Untitled' }}</span>
+                  <span class="doc-path" [title]="doc.sourcePath || doc.source_path">{{ doc.sourcePath || doc.source_path }}</span>
+                </td>
+                <td>
+                  <span class="badge badge-type" [class]="'type-' + (doc.docType || doc.doc_type)">{{ doc.docType || doc.doc_type }}</span>
+                </td>
+                <td *ngIf="isAdmin">
+                  <span class="badge badge-type type-app">{{ getAppName(doc.appId || doc.app_id) }}</span>
+                </td>
+                <td>
+                  <span class="doc-owner" [class.tenant-owner]="(doc.ownerId || doc.owner_id) === '__tenant__'">
+                    {{ (doc.ownerId || doc.owner_id) === '__tenant__' ? 'Organization' : (doc.ownerId || doc.owner_id) }}
+                  </span>
+                </td>
+                <td class="td-tokens">{{ (doc.tokenCount !== undefined ? doc.tokenCount : doc.token_count) | number }}</td>
+                <td>
+                  <span class="badge badge-status" [class]="'status-' + doc.status">{{ doc.status }}</span>
+                </td>
+                <td class="td-actions">
+                  <button class="action-icon-btn view-btn" (click)="viewDocument(doc)" title="View Full Content">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                  <button class="action-icon-btn edit-btn" (click)="editDocument(doc)" title="Edit Document">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </button>
+                  <button class="action-icon-btn delete-btn" (click)="deleteDoc(doc)" [disabled]="deleteLoading" title="Delete Document">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="pagination-footer" *ngIf="filteredDocuments.length > pageSize">
+            <span class="pagination-info">Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredDocuments.length) }} of {{ filteredDocuments.length }} entries</span>
+            <div class="pagination-controls">
+              <button class="btn-outline btn-sm" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
+              <div class="page-numbers">
+                <span class="page-text">Page {{ currentPage }} of {{ totalPages }}</span>
+              </div>
+              <button class="btn-outline btn-sm" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Ingest / Edit Knowledge — Modal Dialog -->
+<div class="ingest-modal-overlay" *ngIf="showIngestModal" (click)="closeIngest()">
+  <div class="ingest-modal-card" (click)="$event.stopPropagation()">
+    <div class="ingest-panel">
+        <div class="panel-header">
+          <div>
+            <h3>{{ isEditing ? 'Edit Knowledge' : 'Ingest Knowledge' }}</h3>
+            <p>{{ isEditing ? 'Update the existing document in the neural memory.' : 'Add new content to the neural memory.' }}</p>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeIngest()" aria-label="Close">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <form [formGroup]="ingestForm" (ngSubmit)="saveIngestion()">
+          <!-- Drag & Drop Upload Zone (Hide when editing) -->
+          <div class="drag-drop-zone" *ngIf="!isEditing" 
+               [class.drag-over]="isFileOverDragZone"
+               (dragover)="onDragOver($event)" 
+               (dragleave)="onDragLeave($event)" 
+               (drop)="onDrop($event)"
+               (click)="fileInput.click()">
+            <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept=".txt,.md,.json,.js,.ts,.py,.html,.css">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span class="drag-title">Upload text or code file</span>
+            <span class="drag-subtitle">Max 1MB allowed</span>
+          </div>
+
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" formControlName="title" placeholder="Document title">
+          </div>
+
+          <div class="form-group">
+            <label>Source Path / URL *</label>
+            <input type="text" formControlName="sourcePath" placeholder="Unique identifier" [readonly]="isEditing" [class.readonly-input]="isEditing">
+          </div>
+
+          <div class="form-group">
+            <label>Document Type *</label>
+            <select formControlName="docType" class="premium-select">
+              <option value="document">Document</option>
+              <option value="code">Code</option>
+              <option value="note">Note</option>
+              <option value="email">Email</option>
+              <option value="wiki">Wiki</option>
+              <option value="api_doc">API Doc</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="isAdmin">
+            <label>Assign to Application</label>
+            <select formControlName="appId" class="premium-select">
+              <option [ngValue]="null">Default (Your App)</option>
+              <option *ngFor="let app of apps" [ngValue]="app.appId">{{ app.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Content *</label>
+            <textarea formControlName="content" rows="6" placeholder="Document content..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" *ngIf="isEditing" (click)="cancelEdit()">Cancel</button>
+            <button type="submit" class="btn-primary glow-button" [disabled]="ingestLoading || ingestForm.invalid">
+              <span *ngIf="!ingestLoading">{{ isEditing ? 'Update Content' : 'Ingest Content' }}</span>
+              <span *ngIf="ingestLoading" class="loading-text">Processing...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal Full Document Content Viewer -->
+<div class="document-modal-overlay" *ngIf="selectedDoc" (click)="closeDocumentView()">
+  <div class="document-modal-card " (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <span class="modal-badge badge-type" [class]="'type-' + (selectedDoc.docType || selectedDoc.doc_type)">{{ selectedDoc.docType || selectedDoc.doc_type }}</span>
+        <h2>{{ selectedDoc.title || 'Untitled Document' }}</h2>
+        <span class="modal-subtitle">{{ selectedDoc.sourcePath || selectedDoc.source_path }}</span>
+      </div>
+      <button class="modal-close-btn" (click)="closeDocumentView()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    
+    <div class="modal-metadata">
+      <div class="meta-item">
+        <span class="meta-label">Tokens</span>
+        <span class="meta-value">{{ (selectedDoc.tokenCount !== undefined ? selectedDoc.tokenCount : selectedDoc.token_count) | number }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Status</span>
+        <span class="meta-value badge-status" [class]="'status-' + selectedDoc.status">{{ selectedDoc.status }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Owner</span>
+        <span class="meta-value owner-value" [class.tenant-owner]="(selectedDoc.ownerId || selectedDoc.owner_id) === '__tenant__'">
+          {{ (selectedDoc.ownerId || selectedDoc.owner_id) === '__tenant__' ? 'Organization' : (selectedDoc.ownerId || selectedDoc.owner_id) }}
+        </span>
+      </div>
+      <div class="meta-item" *ngIf="selectedDoc.createdAt || selectedDoc.created_at">
+        <span class="meta-label">Ingested</span>
+        <span class="meta-value">{{ (selectedDoc.createdAt || selectedDoc.created_at) | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <div class="modal-body custom-scrollbar">
+      <pre class="content-display"><code>{{ selectedDoc.content }}</code></pre>
+    </div>
+  </div>
+</div>

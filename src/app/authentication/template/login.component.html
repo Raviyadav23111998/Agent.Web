@@ -1,0 +1,79 @@
+<div class="login-body" [ngStyle]="{'background': tenantConfig.tenantInfo.themeColor ? 'linear-gradient(135deg, #0f0c29 0%, ' + tenantConfig.tenantInfo.themeColor + ' 100%)' : ''}">
+  <div class="login-container">
+
+    <div class="lang-selector">
+      <select (change)="switchLanguage($event)" [(ngModel)]="selectedLanguage" class="lang-dropdown">
+        <option *ngFor="let lang of LanguageDDL" [value]="lang.value">{{ lang.text }}</option>
+      </select>
+    </div>
+
+    <div class="login-header">
+      <div class="logo-icon custom-logo">
+        <img [src]="tenantConfig.getLogoUrl()" alt="Logo"
+             onerror="this.onerror=null;this.src='assets/images/LOGO.png';" />
+      </div>
+      <h1 class="brand-name">{{ tenantConfig.tenantInfo.orgName || 'Agent' }}</h1>
+      <p class="brand-subtitle">{{ tenantConfig.tenantInfo.subdomain ? tenantConfig.tenantInfo.subdomain + ' Agent Platform' : 'AI Agent Platform' }}</p>
+    </div>
+
+    <form [formGroup]="loginForm" class="login-form" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <div class="input-wrapper">
+          <i class="icon-user">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </i>
+          <input type="text" formControlName="userId" class="form-control" [placeholder]="Language?.username_placeholder || 'Username'" autocomplete="username" autofocus />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrapper">
+          <i class="icon-lock">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </i>
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control" [placeholder]="Language?.password_placeholder || 'Password'" autocomplete="current-password" />
+          <button type="button" class="toggle-password" (click)="togglePassword()">
+            <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" class="btn-submit" [disabled]="isLoading">
+          <span *ngIf="!isLoading">{{ Language?.sign_in || 'Sign In' }}</span>
+          <span *ngIf="isLoading" class="spinner"></span>
+        </button>
+      </div>
+
+      <div class="form-group text-center">
+        <a routerLink="/reset-password" class="link-reset">{{ Language?.forgot_password || 'Forgot password?' }}</a>
+      </div>
+    </form>
+
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <div class="sso-buttons">
+      <button type="button" class="btn-sso btn-ms" (click)="MicrosoftLogin()">
+        <svg viewBox="0 0 21 21" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+        {{ Language?.sign_in_microsoft || 'Sign in with Microsoft' }}
+      </button>
+
+      <button type="button" class="btn-sso btn-google" (click)="googleLogin()">
+        <svg viewBox="0 0 48 48" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        {{ Language?.sign_in_google || 'Sign in with Google' }}
+      </button>
+    </div>
+
+    <div class="login-footer">
+      <div>{{ Language?.powered_by || 'Powered by' }} <strong>Storeglance</strong></div>
+      <div class="store-links">
+        <a href="javascript:void(0)" (click)="goToAppleStore()">App Store</a>
+        <a href="javascript:void(0)" (click)="goToAndroidStore()">Google Play</a>
+      </div>
+    </div>
+  </div>
+</div>

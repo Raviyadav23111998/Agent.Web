@@ -1,0 +1,185 @@
+<div class="api-integrations">
+  <header class="hdr">
+    <div>
+      <h2>API Integrations</h2>
+      <p class="sub">Connect any HTTP API — public SaaS or your own internal business API —
+        as governed agent tools. No code, no deploy.</p>
+    </div>
+    <button class="btn primary" (click)="startImport()">+ Import API</button>
+  </header>
+
+  <div *ngIf="loading" class="muted">Loading…</div>
+
+  <table *ngIf="!loading" class="grid">
+    <thead>
+      <tr><th>API</th><th>Base URL</th><th>Auth</th><th>Ops</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let i of list">
+        <td>
+          <a (click)="open(i)" class="link">{{ i.display_name }}</a>
+          <span class="slug">{{ i.slug }}</span>
+          <span *ngIf="i.allow_private" class="chip warn" title="Reaches a private network">private</span>
+        </td>
+        <td class="mono">{{ i.base_url }}</td>
+        <td>{{ i.security_scheme || 'none' }}</td>
+        <td>{{ i.op_count }}</td>
+        <td><span class="chip" [class.ok]="i.status === 'active'">{{ i.status }}</span></td>
+        <td class="actions">
+          <button class="btn sm" (click)="test(i)" [disabled]="testing[i.integration_id]">Test</button>
+          <button class="btn sm" (click)="reimport(i)">Re-import</button>
+          <button class="btn sm danger" (click)="confirmDelete(i.integration_id)">Delete</button>
+          <span *ngIf="testResult[i.integration_id] as r" class="test"
+                [class.ok]="r.ok" [class.bad]="!r.ok">{{ r.message }}</span>
+        </td>
+      </tr>
+      <tr *ngIf="!list.length"><td colspan="6" class="muted">No integrations yet. Import one to begin.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="drawer" *ngIf="selected">
+    <div class="drawer-hdr">
+      <h3>{{ selected.display_name }} <span class="slug">{{ selected.slug }}</span></h3>
+      <button class="btn sm" (click)="close()">Close</button>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-hdr">
+        <h4>Authentication
+          <span class="chip" [title]="selected.auth_type || ''">{{ authLabel(selected.auth_type || selected.security_scheme) }}</span>
+        </h4>
+        <button class="btn sm" (click)="toggleAuthEdit()">{{ editAuthOpen ? 'Cancel' : 'Override' }}</button>
+      </div>
+      <p class="muted" *ngIf="selected.auth_type === 'login_grant'">
+        Users connect with their <strong>username + password</strong> on the Connections page; the agent
+        signs in at <code>{{ selected.auth_config?.login_url }}</code> and refreshes tokens automatically
+        (only a refresh token is stored — never the password).
+      </p>
+      <p class="muted" *ngIf="selected.auth_type !== 'login_grant'">
+        Credentials: connect provider <code>{{ selected.auth_provider || '—' }}</code> on the Connections page.
+      </p>
+
+      <div *ngIf="editAuthOpen" class="auth-edit">
+        <label>Auth type</label>
+        <select [(ngModel)]="authEdit.auth_type">
+          <option value="api_key">API key</option>
+          <option value="bearer_static">Bearer (static token)</option>
+          <option value="basic">Basic</option>
+          <option value="oauth2_client_credentials">OAuth2 — client credentials</option>
+          <option value="oauth2_password">OAuth2 — password</option>
+          <option value="login_grant">Login flow (live token)</option>
+          <option value="hmac">HMAC</option>
+        </select>
+        <label>Auth config <small>(JSON — e.g. login_url, token_path, refresh)</small></label>
+        <textarea rows="6" [(ngModel)]="authEdit.auth_config_text" class="mono"></textarea>
+        <label>Default headers <small>(JSON — static headers sent on every call, e.g. X-Tenant-Domain)</small></label>
+        <textarea rows="3" [(ngModel)]="authEdit.default_headers_text" class="mono"></textarea>
+        <div class="modal-actions">
+          <button class="btn primary" (click)="saveAuth()">Save auth</button>
+        </div>
+      </div>
+    </div>
+
+    <h4>Operations</h4>
+    <table class="grid">
+      <thead><tr><th>Tool</th><th>Method</th><th>Effect</th><th>Enabled</th><th>Approval</th><th>Embed-safe</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let op of selected.operations">
+          <td class="mono" [title]="op.description">{{ op.tool_name }}</td>
+          <td>{{ op.http_method }}</td>
+          <td>{{ op.side_effect }}</td>
+          <td><input type="checkbox" [checked]="op.enabled" (change)="toggleOp(op, 'enabled')"></td>
+          <td><input type="checkbox" [checked]="op.requires_approval" (change)="toggleOp(op, 'requires_approval')"></td>
+          <td><input type="checkbox" [checked]="op.embed_safe" (change)="toggleOp(op, 'embed_safe')"
+                     title="Reachable by anonymous chatbot visitors"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grants-hdr">
+      <h4>Grants <span class="muted">— which apps/personas may use this API</span></h4>
+      <button class="btn sm" (click)="startGrant()">+ Grant</button>
+    </div>
+    <table class="grid">
+      <thead><tr><th>Scope</th><th>Ref</th><th>Op filter</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let g of selected.grants">
+          <td>{{ g.scope }}</td>
+          <td>{{ g.ref || '(all apps)' }}</td>
+          <td>{{ g.op_filter?.join(', ') || '(all enabled ops)' }}</td>
+          <td><button class="btn sm danger" (click)="removeGrant(g.grant_id)">Remove</button></td>
+        </tr>
+        <tr *ngIf="!selected.grants.length"><td colspan="4" class="muted">No grants — this API reaches no app yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <dialog #importDialog class="dialog">
+    <h3>Import API</h3>
+    <label>Slug <small>(tool namespace, e.g. acme_crm)</small></label>
+    <input [(ngModel)]="imp.slug" placeholder="acme_crm">
+    <label>Display name <small>(optional)</small></label>
+    <input [(ngModel)]="imp.display_name" placeholder="Acme CRM">
+    <label>Spec URL or pasted OpenAPI/Swagger JSON/YAML</label>
+    <textarea [(ngModel)]="imp.source" rows="6"
+              placeholder="https://api.acme.com/openapi.json  — or paste the spec"></textarea>
+    <label class="check">
+      <input type="checkbox" [(ngModel)]="imp.allow_private">
+      This is an internal/private API (allow a private-network host —
+      only check for your own trusted business API).
+    </label>
+    <div class="modal-actions">
+      <button class="btn" (click)="importDialog.close()">Cancel</button>
+      <button class="btn primary" (click)="submitImport()" [disabled]="importing">
+        {{ importing ? 'Importing…' : 'Import' }}
+      </button>
+    </div>
+  </dialog>
+
+  <dialog #grantDialog class="dialog">
+    <h3>Grant integration to…</h3>
+    <label>Scope</label>
+    <select [(ngModel)]="grant.scope" (ngModelChange)="grant.ref = ''">
+      <option value="app">App</option>
+      <option value="persona">Persona</option>
+      <option value="org">Whole organization</option>
+    </select>
+
+    <ng-container *ngIf="grant.scope === 'app'">
+      <label>Application</label>
+      <select [(ngModel)]="grant.ref" [disabled]="grantTargetsLoading">
+        <option value="" disabled>{{ grantTargetsLoading ? 'Loading…' : 'Select an application…' }}</option>
+        <option *ngFor="let a of apps" [value]="a.appId">{{ a.name }} (#{{ a.appId }})</option>
+      </select>
+      <p *ngIf="!grantTargetsLoading && !apps.length" class="muted">No applications found.</p>
+    </ng-container>
+
+    <ng-container *ngIf="grant.scope === 'persona'">
+      <label>Persona</label>
+      <select [(ngModel)]="grant.ref" [disabled]="grantTargetsLoading">
+        <option value="" disabled>{{ grantTargetsLoading ? 'Loading…' : 'Select a persona…' }}</option>
+        <option *ngFor="let p of personas" [value]="p.personaId">{{ p.appName }} / {{ p.name }} (#{{ p.personaId }})</option>
+      </select>
+      <p *ngIf="!grantTargetsLoading && !personas.length" class="muted">No personas found.</p>
+    </ng-container>
+
+    <p *ngIf="grant.scope === 'org'" class="muted">Grants this API to <strong>every</strong> app &amp; persona in the organization.</p>
+    <label>Operation filter <small>(optional, comma-separated operationIds; blank = all)</small></label>
+    <input [(ngModel)]="grant.op_filter" placeholder="getLead, createLead">
+    <div class="modal-actions">
+      <button class="btn" (click)="grantDialog.close()">Cancel</button>
+      <button class="btn primary" (click)="submitGrant()"
+              [disabled]="grant.scope !== 'org' && !grant.ref">Add grant</button>
+    </div>
+  </dialog>
+
+  <dialog #deleteDialog class="dialog">
+    <h3>Delete integration?</h3>
+    <p class="muted">This removes the API, its operations, and all grants. Connections are kept.</p>
+    <div class="modal-actions">
+      <button class="btn" (click)="deleteDialog.close()">Cancel</button>
+      <button class="btn danger" (click)="remove(deleteConfirmId!)">Delete</button>
+    </div>
+  </dialog>
+
+</div>

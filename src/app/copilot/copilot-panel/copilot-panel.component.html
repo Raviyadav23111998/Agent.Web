@@ -1,0 +1,38 @@
+<button class="cp-fab" (click)="toggle()" [class.hidden]="open" title="Ask the assistant">
+  <span class="cp-fab-icon">✨</span>
+</button>
+
+<div class="cp-panel" [class.open]="open">
+  <div class="cp-header">
+    <div class="cp-title">
+      <span class="cp-dot" [class.ready]="conn === 'ready'" [class.busy]="conn === 'connecting'"></span>
+      <strong>Assistant</strong>
+      <span class="cp-sub">guides &amp; fills the screen for you</span>
+    </div>
+    <button class="cp-close" (click)="toggle()" title="Close">✕</button>
+  </div>
+
+  <div class="cp-messages">
+    <div *ngIf="messages.length === 0" class="cp-empty">
+      <p>Hi 👋 I can answer questions and <strong>do things on this screen</strong> for you — create a bot, set up a cron, add a credential. Just ask.</p>
+    </div>
+
+    <div *ngFor="let m of messages" class="cp-msg" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'" [class.error]="m.error">
+
+      <details class="cp-thinking" *ngIf="m.role === 'assistant' && m.thinking" [open]="m.thinkingOpen">
+        <summary>{{ m.content ? 'Thought process' : 'Thinking…' }}</summary>
+        <div class="cp-thinking-body">{{ m.thinking }}</div>
+      </details>
+      <div class="cp-bubble">{{ m.content }}<span class="cp-cursor" *ngIf="m.role === 'assistant' && busy && m === last">▊</span></div>
+    </div>
+  </div>
+
+  <div class="cp-status" *ngIf="status">{{ status }}</div>
+
+  <div class="cp-input">
+    <textarea [(ngModel)]="input" (keydown)="onKey($event)" rows="1"
+              placeholder="Ask, or tell me what to do on this screen…" [disabled]="busy && conn !== 'ready'"></textarea>
+    <button *ngIf="!busy" class="cp-send" (click)="send()" [disabled]="!input.trim()" title="Send">➤</button>
+    <button *ngIf="busy" class="cp-stop" (click)="stop()" title="Stop">■</button>
+  </div>
+</div>

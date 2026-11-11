@@ -1,0 +1,483 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/conversations/conversations.component.html:116:54:
+[37m      116 │ ...>{{ selectedConversation.messages?.[32mlength[37m || 0 }} messages</span>
+          ╵                                       [32m~~~~~~[0m
+
+  Error occurs in the template of component ConversationsComponent.
+
+    src/app/admin/conversations/conversations.component.ts:7:15:
+[37m      7 │   templateUrl: [32m'./conversations.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/chat/settings/applications/applications.component.html:190:48:
+[37m      190 │ ...            <span>Tools: {{ p.allowedTools?.[32mlength[37m || 0 }}</span>
+          ╵                                                [32m~~~~~~[0m
+
+  Error occurs in the template of component ApplicationsComponent.
+
+    src/app/chat/settings/applications/applications.component.ts:9:15:
+[37m      9 │   templateUrl: [32m'./applications.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/chat/settings/credentials-admin/credentials-admin.component.html:67:61:
+[37m      67 │ ...e]="testResult[cred.credential_id]?.[32mmessage[37m || 'Test connection'">
+         ╵                                        [32m~~~~~~~[0m
+
+  Error occurs in the template of component CredentialsAdminComponent.
+
+    src/app/chat/settings/credentials-admin/credentials-admin.component.ts:10:15:
+[37m      10 │   templateUrl: [32m'./credentials-admin.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/chat/settings/integrations/integrations.component.html:64:67:
+[37m      64 │ ...e]="testResult[cred.credential_id]?.[32mmessage[37m || 'Test connection'">
+         ╵                                        [32m~~~~~~~[0m
+
+  Error occurs in the template of component IntegrationsComponent.
+
+    src/app/chat/settings/integrations/integrations.component.ts:7:15:
+[37m      7 │   templateUrl: [32m'./integrations.component.html'[37m,
+        ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/admin/agents/agents.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/admin/conversations/conversations.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/admin/dashboard/dashboard.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/admin/memory-browser/memory-browser.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/management/user/user-list.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../../admin/shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/app/management/user/user.component.scss:1:8:
+[37m      1 │ @import [32m[37m'../../admin/shared-admin';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:29:
+[37m      11 │     @if $prev-num == null or [32m[37munit($num) == "%" or unit($prev-num) ...
+         ╵                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:11:50:
+[37m      11 │ ...$prev-num == null or unit($num) == "%" or [32m[37munit($prev-num) == "%" {
+         ╵                                              [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use math.unit instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:10:
+[37m      37 │   @return [32m[37mred($value), green($value), blue($value);
+         ╵           [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:37:23:
+[37m      37 │   @return red($value), [32m[37mgreen($value), blue($value);
+         ╵                        [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:185:9:
+[37m      185 │     "r": [32m[37mred($color),
+          ╵          [32m^[0m
+
+
+  red() is deprecated. Suggestion:
+  
+  color.channel($color, "red", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:186:9:
+[37m      186 │     "g": [32m[37mgreen($color),
+          ╵          [32m^[0m
+
+
+  green() is deprecated. Suggestion:
+  
+  color.channel($color, "green", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:187:9:
+[37m      187 │     "b": [32m[37mblue($color)
+          ╵          [32m^[0m
+
+
+  blue() is deprecated. Suggestion:
+  
+  color.channel($color, "blue", $space: rgb)
+  
+  More info: [4mhttps://sass-lang.com/d/color-functions[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:207:10:
+[37m      207 │   @return [32m[37mmix(white, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_functions.scss:212:10:
+[37m      212 │   @return [32m[37mmix(black, $color, $weight);
+          ╵           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/_variables.scss:342:26:
+[37m      342 │ $light-bg-subtle:         [32m[37mmix($gray-100, $white) !default;
+          ╵                           [32m^[0m
+
+
+  Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+  Use color.mix instead.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:1:8:
+[37m      1 │ @import [32m[37m"mixins/banner";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:7:8:
+[37m      7 │ @import [32m[37m"functions";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:8:8:
+[37m      8 │ @import [32m[37m"variables";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:9:8:
+[37m      9 │ @import [32m[37m"variables-dark";
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    node_modules/bootstrap/scss/bootstrap.scss:10:8:
+[37m      10 │ @import [32m[37m"maps";
+         ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m232 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.[0m [1m[35m[plugin angular-sass][0m
+
+    angular:styles/global:styles:1:8:
+[37m      1 │ @import [32m'node_modules/bootstrap/scss/bootstrap.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  null
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mbundle initial exceeded maximum budget. Budget 500.00 kB was not met by 621.22 kB with a total of 1.12 MB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/llm-settings/llm-settings.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 367 bytes with a total of 4.37 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/applications/applications.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 9.03 kB with a total of 13.03 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/authentication/style/login.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.32 kB with a total of 5.32 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/system-config/system-config.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 5.59 kB with a total of 9.60 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/admin/memory-browser/memory-browser.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.00 kB with a total of 5.00 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/view/message-bubble.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 4.90 kB with a total of 8.90 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/admin/admin-layout/admin-layout.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 2.76 kB with a total of 6.76 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/view/chat-view.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 3.33 kB with a total of 7.33 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/integrations/integrations.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 7.26 kB with a total of 11.26 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/crons/crons.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.34 kB with a total of 5.34 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/admin/conversations/conversations.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 454 bytes with a total of 4.45 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/header/chat-header.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 133 bytes with a total of 4.13 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/bots/bots.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 3.43 kB with a total of 7.43 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/admin/dashboard/dashboard.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.68 kB with a total of 5.67 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/knowledge/knowledge.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 8.27 kB with a total of 12.27 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/admin/agents/agents.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.38 kB with a total of 5.38 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/management/user/user.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 301 bytes with a total of 4.30 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/chat/settings/credentials-admin/credentials-admin.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 7.93 kB with a total of 11.93 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m4 rules skipped due to selector errors:
+  .form-floating>~label -> Did not expect successive traversals.
+  .btn-group>+.btn -> Did not expect successive traversals.
+  .btn-group>+.btn -> Did not expect successive traversals.
+  .btn-group-vertical>+.btn -> Did not expect successive traversals.[0m
+
+

@@ -1,0 +1,30 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Branding</h1>
+      <p>Your logo for <strong>{{ tenantDomain }}</strong> — applied everywhere: the web app, favicon, Microsoft Teams, the web chatbot, and the VS Code extension.</p>
+    </div>
+  </div>
+
+  <section class="brand-card">
+    <div class="logo-row">
+      <div class="logo-preview" [class.empty]="!logoExists">
+        <img *ngIf="logoExists" [src]="logoUrl" alt="Tenant logo" />
+        <span *ngIf="!logoExists && !checking">No logo yet</span>
+        <span *ngIf="checking" class="muted">…</span>
+      </div>
+
+      <div class="logo-actions">
+        <label class="btn-primary" [class.disabled]="uploading">
+          <span *ngIf="!uploading">{{ logoExists ? 'Replace logo' : 'Upload logo' }}</span>
+          <span *ngIf="uploading">Uploading…</span>
+          <input type="file"
+                 accept="image/png,image/jpeg,image/svg+xml,image/webp,image/x-icon"
+                 (change)="onLogoSelected($event)" [disabled]="uploading" hidden />
+        </label>
+        <p class="hint">PNG, JPG, SVG, WEBP or ICO · up to 2 MB.</p>
+        <p class="hint">Changes can take a few minutes to appear everywhere (cached ~5 min). Each tenant shows only its own logo — there is no shared fallback.</p>
+      </div>
+    </div>
+  </section>
+</div>

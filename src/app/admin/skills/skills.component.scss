@@ -1,0 +1,59 @@
+.skills-container { max-width: 1200px; }
+
+.flash {
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;
+  font-size: 0.85rem; display: flex; justify-content: space-between;
+  &.success { background: rgba(46, 160, 67, .12); color: #2ea043; }
+  &.error   { background: rgba(218, 54, 51, .12); color: #da3633; }
+  .flash-close { background: none; border: none; cursor: pointer; color: inherit; }
+}
+
+.data-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px; overflow: hidden; font-size: 0.86rem;
+  th, td { text-align: left; padding: 10px 14px; vertical-align: top; }
+  thead th { background: var(--kendo-color-base-subtle); font-weight: 600; font-size: 0.8rem; }
+  tbody tr { border-top: 1px solid var(--kendo-color-border); }
+  .inactive-row { opacity: .5; }
+  .desc { font-size: 0.78rem; color: var(--kendo-color-subtle); margin-top: 2px; }
+  .row-actions { text-align: right; white-space: nowrap; }
+  .warn-ratio { color: #da3633; font-weight: 700; }
+}
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.7rem; font-weight: 700; margin-left: 6px;
+  &.badge-primary   { background: rgba(59, 130, 246, .15); color: #3b82f6; }
+  &.badge-secondary { background: var(--kendo-color-base-subtle); color: var(--kendo-color-subtle); }
+}
+
+.icon-btn {
+  background: none; border: none; cursor: pointer; font-size: 0.95rem;
+  padding: 4px 6px; border-radius: 6px;
+  &:hover { background: var(--kendo-color-base-subtle); }
+  &.danger:hover { color: #da3633; }
+}
+
+.skill-editor {
+  label { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem;
+          font-weight: 600; color: var(--kendo-color-subtle); margin-bottom: 12px; }
+  input, textarea {
+    padding: 8px 10px; border: 1px solid var(--kendo-color-border);
+    border-radius: 8px; background: var(--kendo-color-app-surface);
+    color: inherit; font-size: 0.85rem;
+  }
+  textarea { font-family: monospace; resize: vertical; }
+  .versions {
+    margin-top: 6px;
+    h4 { margin: 0 0 6px; font-size: 0.8rem; }
+    .version-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.78rem; padding: 4px 0;
+      border-top: 1px dashed var(--kendo-color-border);
+    }
+    .btn-xs { padding: 2px 10px; font-size: 0.72rem; }
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+}

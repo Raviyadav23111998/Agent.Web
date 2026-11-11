@@ -1,0 +1,134 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>Dashboard</h4>
+      <p class="text-muted">
+        Platform overview · Auto-refreshes every 30s
+        <span *ngIf="lastRefresh"> · Last: {{ lastRefresh | date:'HH:mm:ss' }}</span>
+      </p>
+    </div>
+    <button class="btn btn-primary" (click)="loadAll()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w60"></div>
+    </div>
+  </div>
+
+  <div class="health-banner" [ngClass]="healthStatusClass" *ngIf="health">
+    <div class="health-status">
+      <span class="health-dot"></span>
+      <span class="health-label">{{ health.status | titlecase }}</span>
+    </div>
+    <div class="health-details">
+      <span>{{ health.service }} v{{ health.version }}</span>
+      <span>Uptime: {{ uptimeFormatted }}</span>
+      <span>DB: {{ health.db_connected ? 'Connected' : 'Disconnected' }}</span>
+    </div>
+  </div>
+
+  <div class="stats-grid" *ngIf="stats">
+    <div class="stats-card" routerLink="/admin/conversations">
+      <div class="stats-icon">💬</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.conversations_count }}</span>
+        <span class="stats-label">Conversations</span>
+      </div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-icon">👥</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.users_count }}</span>
+        <span class="stats-label">Active Users</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/agents">
+      <div class="stats-icon">🧠</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.agents_count }}</span>
+        <span class="stats-label">Agents</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/applications">
+      <div class="stats-icon">📱</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.apps_count }}</span>
+        <span class="stats-label">Apps</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/bots">
+      <div class="stats-icon">🤖</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.bots_count }}</span>
+        <span class="stats-label">Bots</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/knowledge">
+      <div class="stats-icon">📚</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.brain_docs_count }}</span>
+        <span class="stats-label">Brain Docs</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/memory">
+      <div class="stats-icon">💾</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.memories_count }}</span>
+        <span class="stats-label">Memories</span>
+      </div>
+    </div>
+    <div class="stats-card" routerLink="/admin/crons">
+      <div class="stats-icon">⏰</div>
+      <div class="stats-info">
+        <span class="stats-value">{{ stats.active_crons }}</span>
+        <span class="stats-label">Active Crons</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="activity-grid" *ngIf="stats">
+
+    <div class="activity-card card">
+      <div class="activity-header">
+        <h5>Recent Conversations</h5>
+        <a routerLink="/admin/conversations" class="view-all">View All →</a>
+      </div>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let conv of stats.recent_conversations">
+          <div class="activity-main">
+            <span class="activity-title">{{ conv.title || 'Untitled' }}</span>
+            <span class="activity-meta text-muted">User {{ conv.userId }} · {{ conv.messageCount }} msgs</span>
+          </div>
+          <span class="activity-time text-muted">{{ timeAgo(conv.updatedAt) }}</span>
+        </div>
+        <div class="empty-text" *ngIf="stats.recent_conversations.length === 0">No recent conversations</div>
+      </div>
+    </div>
+
+    <div class="activity-card card">
+      <div class="activity-header">
+        <h5>Recent Actions</h5>
+      </div>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let audit of stats.recent_audit">
+          <div class="activity-main">
+            <span class="activity-title">
+              {{ getStatusIcon(audit.status) }} {{ audit.toolName }}
+            </span>
+            <span class="activity-meta text-muted">
+              <span class="side-effect-badge" [ngClass]="getSideEffectBadge(audit.sideEffect)">{{ audit.sideEffect }}</span>
+              {{ audit.argsSummary | slice:0:60 }}
+            </span>
+          </div>
+          <span class="activity-time text-muted">{{ timeAgo(audit.createdAt) }}</span>
+        </div>
+        <div class="empty-text" *ngIf="stats.recent_audit.length === 0">No recent actions</div>
+      </div>
+    </div>
+  </div>
+</div>

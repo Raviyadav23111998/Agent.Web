@@ -1,0 +1,80 @@
+<div class="chat-view">
+
+  <div class="message-area" #messageContainer (scroll)="onScroll()">
+
+    <div class="empty-state" *ngIf="messages.length === 0 && !isStreaming">
+      <div class="empty-logo">
+        <div class="logo-glow"></div>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h2>How can I help you today?</h2>
+      <p class="empty-subtitle">I can read your emails, manage Jira tickets, search documents, run code, and more.</p>
+
+      <div class="suggestions">
+        <button class="suggestion-card" *ngFor="let s of suggestions" (click)="useSuggestion(s.text)">
+          <span class="suggestion-icon">{{ s.icon }}</span>
+          <span class="suggestion-text">{{ s.text }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="messages-list" *ngIf="messages.length > 0">
+      <app-message-bubble
+        *ngFor="let msg of messages; let i = index; let last = last"
+        [message]="msg"
+        [isStreaming]="isStreaming"
+        [isLast]="last"
+        [showRegenerate]="last && msg.role === 'assistant' && !isStreaming"
+        (regenerate)="onRegenerate()"
+        (retry)="onRetry()">
+      </app-message-bubble>
+    </div>
+
+    <div class="plan-panel" *ngIf="planSteps.length > 0">
+      <div class="plan-head" (click)="planExpanded = !planExpanded">
+        <svg class="plan-chevron" [class.collapsed]="!planExpanded" width="14" height="14"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="plan-title">Plan</span>
+        <span class="plan-count">{{ planSteps.length }} steps</span>
+      </div>
+      <ol class="plan-steps" *ngIf="planExpanded">
+        <li *ngFor="let step of planSteps">{{ step }}</li>
+      </ol>
+    </div>
+
+    <div class="approval-list" *ngIf="pendingApprovals.length > 0">
+      <div class="approval-card" *ngFor="let appr of pendingApprovals">
+        <div class="approval-head">
+          <span class="approval-icon">⚠️</span>
+          <span class="approval-title">Approval required</span>
+        </div>
+        <div class="approval-body">
+          The agent wants to run
+          <code class="approval-tool">{{ appr.toolName }}</code>.
+          <pre class="approval-args" *ngIf="appr.toolArgs">{{ appr.toolArgs | json }}</pre>
+        </div>
+        <div class="approval-actions">
+          <button class="approve-btn" (click)="onApproval(appr.approvalId, true)">Approve</button>
+          <button class="deny-btn" (click)="onApproval(appr.approvalId, false)">Deny</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="input-area-wrapper">
+    <app-chat-input
+      [isStreaming]="isStreaming"
+      [queuedCount]="queuedCount"
+      (messageSent)="onSendMessage($event)"
+      (stopGeneration)="onStopGeneration()">
+    </app-chat-input>
+  </div>
+
+</div>

@@ -1,0 +1,99 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>User Management</h4>
+      <p class="text-muted">Manage platform users, roles, and access control.</p>
+    </div>
+    <button class="btn btn-primary" (click)="newUser()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New User
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <input class="filter-input search-input" type="text"
+           placeholder="Search by name, email, or code..."
+           [(ngModel)]="search" (keyup.enter)="onSearch()">
+    <button class="btn btn-secondary" (click)="onSearch()">Search</button>
+    <span class="filter-count" *ngIf="total">{{ total }} users</span>
+  </div>
+
+  <div class="skeleton-table" *ngIf="isLoading">
+    <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="skeleton-line w60"></div>
+    </div>
+  </div>
+
+  <div class="data-table-container" *ngIf="!isLoading && users.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="onSort('userCode')">
+            User Code <span class="sort-icon">{{ getSortIcon('userCode') }}</span>
+          </th>
+          <th class="sortable" (click)="onSort('fullName')">
+            Full Name <span class="sort-icon">{{ getSortIcon('fullName') }}</span>
+          </th>
+          <th class="sortable" (click)="onSort('email')">
+            Email <span class="sort-icon">{{ getSortIcon('email') }}</span>
+          </th>
+          <th>Role</th>
+          <th>Platform</th>
+          <th>Status</th>
+          <th>Blocked</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" (click)="editUser(user)" class="clickable-row">
+          <td>
+            <span class="user-code">{{ user.userCode }}</span>
+          </td>
+          <td>
+            <div class="user-name-cell">
+              <div class="user-avatar-sm">{{ (user.fullName || '?')[0] }}</div>
+              <span>{{ user.fullName }}</span>
+            </div>
+          </td>
+          <td class="text-muted">{{ user.email }}</td>
+          <td>
+            <span class="role-badge">{{ user.roleName || '—' }}</span>
+          </td>
+          <td class="text-muted">{{ user.platform || '—' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
+              {{ user.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="user.isBlocked ? 'status-inactive' : ''">
+              {{ user.isBlocked ? 'Blocked' : '—' }}
+            </span>
+          </td>
+          <td class="table-actions">
+            <button class="btn-icon" (click)="deleteUser(user, $event)" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && users.length === 0">
+    <div class="empty-icon">👥</div>
+    <h5>No Users Found</h5>
+    <p class="text-muted" *ngIf="search">Try adjusting your search.</p>
+  </div>
+
+  <div class="pagination" *ngIf="total > take">
+    <span class="pagination-info">
+      Showing {{ skip + 1 }}–{{ skip + users.length }} of {{ total }}
+    </span>
+    <div class="pagination-buttons">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="skip === 0">← Prev</button>
+      <span class="pagination-page">Page {{ currentPage }} / {{ totalPages }}</span>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="skip + take >= total">Next →</button>
+    </div>
+  </div>
+</div>

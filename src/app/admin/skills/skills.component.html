@@ -1,0 +1,73 @@
+<div class="skills-container">
+  <app-page-header title="Skills &amp; Learning"
+                   subtitle="Procedural memory the agent maintains about how to do your work — learned from corrections and successful sessions, curated automatically.">
+  </app-page-header>
+
+  <div class="flash success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="flash error" *ngIf="errorMessage">{{ errorMessage }}
+    <button class="flash-close" (click)="errorMessage = ''">✕</button>
+  </div>
+
+  <app-skeleton *ngIf="isLoading" [rows]="4"></app-skeleton>
+  <app-empty-state *ngIf="loadError && !isLoading" icon="⚠️" title="Couldn't load skills"
+                   subtitle="Something went wrong reaching the server.">
+    <button class="btn btn-secondary" (click)="load()">Try again</button>
+  </app-empty-state>
+  <app-empty-state *ngIf="!isLoading && !loadError && skills.length === 0" icon="🎓"
+                   title="No skills learned yet"
+                   subtitle="Once learning is enabled, the agent saves reusable lessons here after real sessions. You can also teach it directly with /learn in chat.">
+  </app-empty-state>
+
+  <table class="data-table" *ngIf="!isLoading && skills.length > 0">
+    <thead><tr>
+      <th>Skill</th><th>Scope</th><th>Origin</th><th>Used</th>
+      <th title="Corrections received in conversations where this skill was in play">Corrections</th>
+      <th>v</th><th></th>
+    </tr></thead>
+    <tbody>
+      <tr *ngFor="let s of skills" [class.inactive-row]="!s.is_active">
+        <td>
+          <strong>{{ s.name }}</strong>
+          <span class="badge badge-secondary" *ngIf="!s.is_active">archived</span>
+          <div class="desc">{{ s.description }}</div>
+        </td>
+        <td>{{ s.scope_type }}</td>
+        <td><span class="badge" [ngClass]="s.origin === 'bundled' ? 'badge-secondary' : 'badge-primary'">{{ s.origin }}</span></td>
+        <td>{{ s.use_count }}</td>
+        <td [class.warn-ratio]="s.use_count > 3 && s.correction_after_use / s.use_count > 0.3">
+          {{ correctionRatio(s) }}</td>
+        <td>{{ s.version }}</td>
+        <td class="row-actions">
+          <button class="icon-btn" (click)="togglePin(s)"
+                  [title]="s.pinned ? 'Unpin (curator may consolidate)' : 'Pin (protect from curator)'">
+            {{ s.pinned ? '📌' : '📍' }}</button>
+          <button class="icon-btn" (click)="openEditor(s)" title="View / edit">✎</button>
+          <button class="icon-btn danger" *ngIf="s.is_active && s.origin !== 'bundled'"
+                  (click)="archive(s)" title="Archive">🗑</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #editorTpl>
+    <div class="skill-editor">
+      <label>Description
+        <input [(ngModel)]="editDescription" maxlength="120">
+      </label>
+      <label>Instructions (SKILL.md)
+        <textarea [(ngModel)]="editBody" rows="16" spellcheck="false"></textarea>
+      </label>
+      <div class="versions" *ngIf="versions.length > 0">
+        <h4>History</h4>
+        <div class="version-row" *ngFor="let v of versions">
+          <span>v{{ v.version }} — {{ v.edited_by }} — {{ v.created_at | date:'MMM d, HH:mm' }}</span>
+          <button class="btn btn-secondary btn-xs" (click)="rollback(v)">Restore</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="formDialog.close()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveEdit()">Save</button>
+      </div>
+    </div>
+  </ng-template>
+</div>

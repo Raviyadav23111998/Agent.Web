@@ -1,0 +1,63 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [ "main", "uat", "sit" ]
+  pull_request:
+    branches: [ "main", "uat", "sit" ]
+
+jobs:
+  build-and-deploy:
+    name: Angular Build & Deploy
+    runs-on: self-hosted
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore patched packages
+        run: git checkout -- node_modules/@progress/kendo-licensing/
+
+      - name: Build (Production)
+        if: github.ref == 'refs/heads/main'
+        run: npx ng build --configuration production
+
+      - name: Build (UAT)
+        if: github.ref == 'refs/heads/uat'
+        run: npx ng build --configuration uat
+
+      - name: Build (SIT)
+        if: github.ref == 'refs/heads/sit'
+        run: npx ng build --configuration sit
+
+      - name: Deploy to Production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/ai.storeglance.com/web"
+          rsync -az --delete \
+            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/ai.storeglance.com/web/
+          echo "✅ Deployed to PRODUCTION (ai.storeglance.com)"
+
+      - name: Deploy to UAT
+        if: github.event_name == 'push' && github.ref == 'refs/heads/uat'
+        run: |
+          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/uat-ai.storeglance.com/web"
+          rsync -az --delete \
+            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/uat-ai.storeglance.com/web/
+          echo "✅ Deployed to UAT (uat-ai.storeglance.com)"
+
+      - name: Deploy to SIT
+        if: github.event_name == 'push' && github.ref == 'refs/heads/sit'
+        run: |
+          ssh root@${DEPLOY_HOST} "mkdir -p /var/www/sit-ai.storeglance.com/web"
+          rsync -az --delete \
+            dist/agent.web/browser/ root@${DEPLOY_HOST}:/var/www/sit-ai.storeglance.com/web/
+          echo "✅ Deployed to SIT (sit-ai.storeglance.com)"

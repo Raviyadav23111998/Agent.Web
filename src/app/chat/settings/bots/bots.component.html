@@ -1,0 +1,178 @@
+<div class="bots-container">
+  <div class="header-section">
+    <h1>Chatbots</h1>
+    <p>Create and manage AI bots for your websites.</p>
+    <button class="btn-primary glow-button" (click)="openEditor()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Create Bot
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    Loading bots...
+  </div>
+
+  <div class="bots-grid" *ngIf="!isLoading">
+    <div class="bot-card" *ngFor="let bot of bots">
+      <div class="bot-header">
+        <div class="bot-info">
+          <div class="bot-avatar" [style.background]="bot.theme_color">
+            {{bot.name.charAt(0)}}
+          </div>
+          <div>
+            <h3>{{bot.name}}</h3>
+            <span class="status-badge" [class.active]="bot.is_active">
+              {{bot.is_active ? 'Active' : 'Inactive'}}
+            </span>
+          </div>
+        </div>
+        <div class="bot-actions">
+          <button class="btn-icon" (click)="openEditor(bot)" title="Edit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </button>
+          <button class="btn-icon danger" (click)="deleteBot(bot.bot_id)" title="Delete">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+      <p class="bot-desc">{{bot.description || 'No description provided.'}}</p>
+
+      <div class="bot-footer">
+        <span class="token-prefix" *ngIf="bot.api_token_prefix">{{ bot.api_token_prefix }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isEditorOpen" (click)="closeEditor()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingBotId ? 'Edit Bot' : 'Create New Bot' }}</h2>
+      <button class="btn-close" (click)="closeEditor()">&times;</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button [class.active]="activeTab === 'core'" (click)="activeTab = 'core'">Identity</button>
+      <button [class.active]="activeTab === 'rules'" (click)="activeTab = 'rules'">Rules</button>
+
+      <button [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">Security</button>
+    </div>
+
+    <div class="modal-body custom-scrollbar">
+
+      <form [formGroup]="botForm" *ngIf="activeTab === 'core'">
+        <div class="form-group">
+          <label>Bot Name</label>
+          <input type="text" formControlName="name" placeholder="e.g. Sales Assistant">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" formControlName="description" placeholder="Internal notes">
+        </div>
+        <div class="form-group">
+          <label>System Prompt</label>
+          <textarea formControlName="system_prompt" rows="5" placeholder="You are a..."></textarea>
+          <small>This is the base persona and instruction set for the bot.</small>
+        </div>
+        <div class="form-group">
+          <label>Welcome Message</label>
+          <input type="text" formControlName="welcome_message" placeholder="Hi! How can I help?">
+        </div>
+        <div class="form-group row">
+          <div class="col">
+            <label>Theme Color</label>
+            <input type="color" formControlName="theme_color" style="height: 42px; padding: 2px;">
+          </div>
+          <div class="col">
+            <label>Application</label>
+            <select formControlName="app_id">
+              <option [ngValue]="null">-- No Application --</option>
+              <option *ngFor="let app of apps" [ngValue]="app.appId">{{ app.name }}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <div *ngIf="activeTab === 'rules'">
+        <p class="tab-desc">Rules allow you to override the bot's behavior depending on which page the user is on.</p>
+        <div class="rules-list">
+          <div class="rule-item" *ngFor="let control of rulesControls; let i = index" [formGroup]="$any(control)">
+            <div class="rule-header">
+              <h4>Rule {{i + 1}}</h4>
+              <button class="btn-icon danger" (click)="removeRule(i)">&times;</button>
+            </div>
+            <div class="form-group row">
+              <div class="col">
+                <label>Match Type</label>
+                <select formControlName="rule_type">
+                  <option value="url_contains">URL Contains</option>
+                  <option value="url_exact">Exact URL</option>
+                  <option value="url_regex">Regex Pattern</option>
+                  <option value="fallback">Fallback (Any page)</option>
+                </select>
+              </div>
+              <div class="col" *ngIf="control.get('rule_type')?.value !== 'fallback'">
+                <label>Pattern</label>
+                <input type="text" formControlName="pattern" placeholder="/pricing">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Contextual Instruction</label>
+              <textarea formControlName="instruction" rows="2" placeholder="e.g. Focus on selling..."></textarea>
+            </div>
+          </div>
+        </div>
+        <button class="btn-outline mt-2" (click)="addRuleFormGroup()">+ Add Rule</button>
+      </div>
+
+      <form [formGroup]="botForm" *ngIf="activeTab === 'security'">
+
+        <div class="token-alert" *ngIf="newBotToken">
+          <div class="alert-banner warning">
+            <strong>⚠ Copy this API token now!</strong> It will not be displayed again.
+          </div>
+          <div class="form-group">
+            <label>API Token (one-time display)</label>
+            <div class="api-key-box new-token">
+              <code>{{ newBotToken }}</code>
+              <button type="button" class="copy-btn" (click)="copyApiToken()" title="Copy API Key">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn-outline" (click)="copyScript()" style="margin-top: 8px;">
+            📋 Copy Embed Script
+          </button>
+        </div>
+
+        <div class="form-group" *ngIf="editingBotId && !newBotToken">
+          <label>API Key (masked)</label>
+          <div class="api-key-box">
+            <code>{{ currentBotApiToken || '****' }}</code>
+          </div>
+          <small>The full token was shown once when the bot was created. If lost, delete and recreate the bot.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Allowed Domains (CORS)</label>
+          <input type="text" formControlName="allowed_domains" placeholder="example.com, localhost">
+          <small>Comma-separated list of domains allowed to use this bot's widget. Use * for any domain.</small>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="is_active">
+            Bot is Active
+          </label>
+        </div>
+      </form>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditor()">Cancel</button>
+      <button class="btn-primary" (click)="saveBot()" [disabled]="botForm.invalid">Save Bot</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+{
+  "Message": {
+    "login_successful": "Login Successful",
+    "invalid_password": "Invalid Password",
+    "invalid_username": "Invalid Username",
+    "account_disabled": "Account Disabled"
+  }
+}

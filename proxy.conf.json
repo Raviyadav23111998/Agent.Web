@@ -1,0 +1,28 @@
+{
+  "/Login": {
+    "target": "http://localhost:8100",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/Logout": {
+    "target": "http://localhost:8100",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ChangePassword": {
+    "target": "http://localhost:8100",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/health": {
+    "target": "http://localhost:8100",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api": {
+    "target": "http://localhost:8100",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api": "" }
+  }
+}

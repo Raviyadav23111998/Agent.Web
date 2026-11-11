@@ -1,0 +1,16 @@
+{
+  "Login": {
+    "invalid_credentials": "कृपया मान्य क्रेडेंशियल दर्ज करें",
+    "login_successful": "लॉगिन सफल",
+    "invalid_password": "अमान्य पासवर्ड",
+    "invalid_username": "अमान्य उपयोगकर्ता नाम",
+    "account_disabled": "खाता अक्षम किया गया",
+    "sign_in": "साइन इन करें",
+    "sign_in_microsoft": "Microsoft के साथ साइन इन करें",
+    "sign_in_google": "Google के साथ साइन इन करें",
+    "username_placeholder": "उपयोगकर्ता नाम",
+    "password_placeholder": "पासवर्ड",
+    "forgot_password": "पासवर्ड भूल गए?",
+    "powered_by": "द्वारा संचालित"
+  }
+}

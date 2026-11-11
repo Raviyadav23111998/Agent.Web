@@ -1,0 +1,42 @@
+// Shared sidebar design language — one source of truth for both the chat
+// (normal user) and admin navigation shells. Light surface, tenant-primary
+// accent (via --kendo-color-* tokens), restrained motion, accessible focus.
+//
+// Usage:  @use '../../common/style/sidebar' as sb;
+//         .nav-item { border-radius: sb.$item-radius; @include sb.focusable; }
+
+$width:            268px;   // expanded rail
+$width-collapsed:  72px;    // icon-only rail
+$item-radius:      10px;
+$item-pad-y:       9px;
+$item-pad-x:       12px;
+$item-gap:         12px;
+$rail-pad-x:       12px;    // horizontal padding of the scroll region
+$brand-height:     60px;
+$footer-min:       64px;
+$icon-size:        20px;
+$transition:       0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Accent = the shared, brand-derived accent tokens (see styles.scss). These
+// track the live --kendo-color-primary and stay WCAG-AA in light + dark, unlike
+// the shipped --kendo-color-primary-subtle/-on-surface (locked to teal).
+$accent:           var(--kendo-color-primary);
+$accent-on:        var(--kendo-color-on-primary);
+$accent-subtle:    var(--accent-tint);
+$accent-text:      var(--accent-text);
+
+// Surface + text roles, all token-backed so dark mode + theming just work.
+$surface:          var(--kendo-color-surface-alt);
+$border:           var(--kendo-color-border);
+$text:             var(--kendo-color-on-app-surface);
+$text-muted:       var(--kendo-color-subtle);
+$hover-bg:         var(--kendo-color-base);
+
+// Consistent keyboard focus ring (WCAG 2.4.7).
+@mixin focusable {
+  outline: none;
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--kendo-color-app-surface),
+                0 0 0 4px var(--kendo-color-primary);
+  }
+}

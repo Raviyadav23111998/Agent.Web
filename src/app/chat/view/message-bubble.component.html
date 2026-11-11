@@ -1,0 +1,147 @@
+<div class="message-bubble" [class.user]="isUser" [class.assistant]="isAssistant" [class.error]="isError">
+
+  <div class="bubble-avatar" *ngIf="isAssistant">
+    <div class="avatar-icon" [class.error-icon]="isError">
+      <svg *ngIf="!isError" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <svg *ngIf="isError" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="bubble-body">
+
+    <div class="bubble-role" *ngIf="isAssistant">{{ tenantConfig.tenantInfo.orgName || 'Agent' }}</div>
+
+    <div class="thinking-accordion" *ngIf="isAssistant && message.thinking"
+         [class.expanded]="isThinkingExpanded" [class.active]="!message.thinkingDone">
+      <div class="thinking-header" (click)="toggleThinking()">
+        <span class="thinking-dot"></span>
+        <span class="thinking-title">{{ message.thinkingDone ? 'Thought process' : 'Thinking…' }}</span>
+        <svg class="chevron" [class.rotated]="isThinkingExpanded" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+      <div class="thinking-body" *ngIf="isThinkingExpanded">
+        <div class="thinking-text">{{ message.thinking }}</div>
+      </div>
+    </div>
+
+    <div class="tool-accordions" *ngIf="latestToolCall as tc">
+      <div class="tool-accordion" [class.expanded]="isToolExpanded('latest')">
+        <div class="tool-header" (click)="toggleTool('latest')">
+          <div class="tool-status-icon" [class.running]="tc.status === 'running'" [class.done]="tc.status === 'done' || tc.status === 'completed'">
+            <div class="spinner" *ngIf="tc.status === 'running'"></div>
+            <svg *ngIf="tc.status === 'done' || tc.status === 'completed'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <span class="tool-title">
+            <span *ngIf="totalToolCalls > 1" style="background: color-mix(in srgb, var(--kendo-color-primary-hover) 20%, transparent); color: var(--kendo-color-primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 6px;">{{ totalToolCalls }} tools</span>
+            {{ tc.status === 'running' ? 'Using' : 'Used' }} <strong>{{ tc.name }}</strong>
+          </span>
+          <svg class="chevron" [class.rotated]="isToolExpanded('latest')" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+
+        <div class="tool-body" *ngIf="isToolExpanded('latest') && tc.args">
+          <pre class="tool-args-pre"><code>{{ getFormattedArgs(tc.args) }}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="bubble-attachments" *ngIf="message.attachments?.length">
+      <ng-container *ngFor="let a of message.attachments">
+        <a *ngIf="a.kind === 'image'" class="att-image" [href]="attUrl(a)"
+           target="_blank" rel="noopener">
+          <img [src]="a.localUrl || attUrl(a, true)" [alt]="a.fileName"/>
+        </a>
+        <video *ngIf="a.kind === 'video'" class="att-video" [src]="attUrl(a)" controls></video>
+        <audio *ngIf="a.kind === 'audio'" class="att-audio" [src]="attUrl(a)" controls></audio>
+        <a *ngIf="a.kind === 'document'" class="att-file" [href]="attUrl(a)"
+           target="_blank" rel="noopener" [title]="a.fileName">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>{{ a.fileName }}</span>
+        </a>
+      </ng-container>
+    </div>
+
+    <div class="bubble-content"
+         [class.streaming]="showCursor"
+         [class.error-content]="isError">
+
+      <div *ngIf="isUser" class="user-text">{{ cleanContent }}</div>
+
+      <div *ngIf="isAssistant"
+           class="assistant-text markdown-body"
+           (click)="onContentClick($event)"
+           [innerHTML]="renderedHtml"></div>
+
+      <span class="cursor" *ngIf="showCursor">▊</span>
+
+      <div class="citation-chips" *ngIf="isAssistant && message.sources?.length">
+        <span class="citation-label">Sources</span>
+        <span class="citation-chip" *ngFor="let s of message.sources"
+              [title]="s.snippet || s.sourcePath || s.title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          {{ s.title }}
+        </span>
+      </div>
+    </div>
+
+    <div class="retry-row" *ngIf="isAssistant && message.canRetry && !isStreaming">
+      <button class="retry-btn" (click)="onRetry()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        Retry
+      </button>
+    </div>
+
+    <div class="bubble-actions" *ngIf="isAssistant && !showCursor && message.content">
+
+      <button class="action-btn" (click)="copyMessage()" [title]="showCopied ? 'Copied!' : 'Copy message'">
+        <svg *ngIf="!showCopied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <svg *ngIf="showCopied" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </button>
+
+      <button class="action-btn" *ngIf="showRegenerate" (click)="onRegenerate()" title="Regenerate response">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>

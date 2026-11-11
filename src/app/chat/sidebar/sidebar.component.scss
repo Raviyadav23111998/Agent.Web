@@ -1,0 +1,223 @@
+@use '../../common/style/sidebar' as sb;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------ brand */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  min-height: sb.$brand-height;
+  border-bottom: 1px solid sb.$border;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.2px;
+  color: sb.$text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -------------------------------------------------------------- new chat */
+.sidebar-header {
+  padding: 14px sb.$rail-pad-x 10px;
+  flex-shrink: 0;
+}
+
+.btn-new-chat {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: sb.$accent;
+  border: none;
+  border-radius: sb.$item-radius;
+  color: sb.$accent-on;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background sb.$transition;
+  @include sb.focusable;
+
+  app-icon { font-size: 18px; }
+
+  &:hover { background: var(--kendo-color-primary-hover); }
+  &:active { background: var(--kendo-color-primary-active); }
+}
+
+/* --------------------------------------------------------------- search */
+.sidebar-search {
+  padding: 0 sb.$rail-pad-x 10px;
+  flex-shrink: 0;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: sb.$text-muted;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    background: var(--kendo-color-base);
+    border: 1px solid transparent;
+    border-radius: sb.$item-radius;
+    color: sb.$text;
+    font-size: 0.86rem;
+    outline: none;
+    transition: background sb.$transition, border-color sb.$transition;
+
+    &::placeholder { color: sb.$text-muted; }
+
+    &:focus {
+      border-color: sb.$accent;
+      background: var(--kendo-color-app-surface);
+    }
+  }
+}
+
+/* -------------------------------------------------------- conversations */
+.sidebar-conversations {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 sb.$rail-pad-x;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--kendo-color-base-emphasis);
+    border-radius: 3px;
+  }
+}
+
+.date-group-label {
+  padding: 14px 12px 6px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: sb.$text-muted;
+}
+
+.conv-item {
+  display: flex;
+  align-items: center;
+  gap: sb.$item-gap;
+  padding: sb.$item-pad-y sb.$item-pad-x;
+  margin: 1px 0;
+  border-radius: sb.$item-radius;
+  cursor: pointer;
+  transition: background sb.$transition, color sb.$transition;
+  position: relative;
+  @include sb.focusable;
+
+  &:hover {
+    background: sb.$hover-bg;
+    .conv-delete { opacity: 1; }
+  }
+
+  &.active {
+    background: sb.$accent-subtle;
+
+    .conv-title {
+      color: sb.$accent-text;
+      font-weight: 600;
+    }
+    .conv-icon { color: sb.$accent; }
+  }
+}
+
+.conv-icon {
+  flex-shrink: 0;
+  font-size: sb.$icon-size;
+  color: sb.$text-muted;
+  display: inline-flex;
+}
+
+.conv-title {
+  flex: 1;
+  font-size: 0.85rem;
+  color: sb.$text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color sb.$transition;
+}
+
+.conv-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: sb.$text-muted;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  font-size: 15px;
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  transition: background sb.$transition, color sb.$transition, opacity sb.$transition;
+  @include sb.focusable;
+
+  &:hover {
+    background: var(--kendo-color-error-subtle);
+    color: var(--kendo-color-error);
+  }
+
+  &:focus-visible { opacity: 1; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: sb.$text-muted;
+
+  p {
+    font-size: 0.86rem;
+    margin: 0 0 4px;
+  }
+  span { font-size: 0.75rem; }
+}
+
+/* ------------------------------------------------------------------ footer */
+.sidebar-footer {
+  padding: 10px sb.$rail-pad-x;
+  border-top: 1px solid sb.$border;
+  flex-shrink: 0;
+}

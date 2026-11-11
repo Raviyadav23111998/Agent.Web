@@ -1,0 +1,143 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>Agent Management</h4>
+      <p class="text-muted">Monitor and manage AI agents, their tools, schedules, and run history.</p>
+    </div>
+    <button class="btn btn-primary" (click)="loadAgents()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <div class="skeleton-grid" *ngIf="isLoading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="skeleton-line w60"></div>
+      <div class="skeleton-line w40"></div>
+      <div class="skeleton-line w80"></div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && agents.length === 0">
+    <div class="empty-icon">🧠</div>
+    <h5>No Agents Yet</h5>
+    <p class="text-muted">
+      Agents are autonomous workers with their own prompt, tools, and optional
+      schedule — e.g. an email-triage or auto-sync agent that runs on its own.
+    </p>
+    <p class="text-muted">
+      Create one by asking the assistant to "create an agent…", via the
+      <code>agent_create</code> tool, or the API. They'll appear here with their
+      run history once defined.
+    </p>
+  </div>
+
+  <div class="agent-grid" *ngIf="!isLoading && agents.length > 0">
+    <div class="agent-card card" *ngFor="let agent of agents" (click)="selectAgent(agent)">
+      <div class="agent-card-header">
+        <div class="agent-name-row">
+          <span class="agent-icon">🧠</span>
+          <h5 class="agent-name">{{ agent.name }}</h5>
+        </div>
+        <span class="status-badge" [ngClass]="agent.enabled ? 'status-active' : 'status-inactive'">
+          {{ agent.enabled ? 'Active' : 'Disabled' }}
+        </span>
+      </div>
+
+      <p class="agent-desc text-muted" *ngIf="agent.description">{{ agent.description }}</p>
+
+      <div class="agent-meta">
+        <div class="meta-item" *ngIf="agent.model">
+          <span class="meta-label">Model</span>
+          <span class="meta-value">{{ agent.model }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Delivery</span>
+          <span class="meta-value">{{ agent.deliver || 'local' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Visibility</span>
+          <span class="meta-value">{{ agent.visibility || 'global' }}</span>
+        </div>
+      </div>
+
+      <div class="agent-stats">
+        <div class="stat">
+          <span class="stat-value">{{ agent.runCount || agent.run_count || 0 }}</span>
+          <span class="stat-label">Runs</span>
+        </div>
+        <div class="stat" *ngIf="agent.tools?.length">
+          <span class="stat-value">{{ agent.tools.length }}</span>
+          <span class="stat-label">Tools</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ timeAgo(agent.lastRunAt || agent.last_run_at) }}</span>
+          <span class="stat-label">Last Run</span>
+        </div>
+      </div>
+
+      <div class="agent-schedule" *ngIf="agent.schedule">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>{{ agent.schedule }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-overlay" *ngIf="selectedAgent" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <div>
+          <h4>{{ selectedAgent.name }}</h4>
+          <span class="status-badge" [ngClass]="selectedAgent.enabled ? 'status-active' : 'status-inactive'">
+            {{ selectedAgent.enabled ? 'Active' : 'Disabled' }}
+          </span>
+        </div>
+        <button class="btn-icon" (click)="closeDetail()">✕</button>
+      </div>
+
+      <p class="text-muted" *ngIf="selectedAgent.description">{{ selectedAgent.description }}</p>
+
+      <div class="detail-section" *ngIf="selectedAgent.systemPrompt || selectedAgent.system_prompt">
+        <h6>System Prompt</h6>
+        <div class="prompt-box">{{ selectedAgent.systemPrompt || selectedAgent.system_prompt }}</div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedAgent.tools?.length">
+        <h6>Allowed Tools ({{ selectedAgent.tools.length }})</h6>
+        <div class="tool-chips">
+          <span class="chip" *ngFor="let tool of selectedAgent.tools">{{ tool }}</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h6>Run History</h6>
+        <div class="skeleton-line w60" *ngIf="isRunsLoading"></div>
+        <div class="empty-text" *ngIf="!isRunsLoading && selectedRuns.length === 0">No runs yet.</div>
+        <div class="data-table-container" *ngIf="!isRunsLoading && selectedRuns.length > 0">
+          <table class="data-table data-table-compact">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Input</th>
+                <th>Duration</th>
+                <th>Tokens</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let run of selectedRuns">
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
+                </td>
+                <td class="truncate-cell">{{ run.inputPrompt || run.input_prompt || '—' }}</td>
+                <td>{{ run.durationMs || run.duration_ms ? ((run.durationMs || run.duration_ms) / 1000).toFixed(1) + 's' : '—' }}</td>
+                <td>{{ run.tokenCount || run.token_count || 0 }}</td>
+                <td>{{ timeAgo(run.startedAt || run.started_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

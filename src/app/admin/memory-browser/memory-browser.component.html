@@ -1,0 +1,87 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h4>Memory Browser</h4>
+      <p class="text-muted">Browse and manage the agent's persistent memory across all users and layers.</p>
+    </div>
+    <button class="btn btn-primary" (click)="loadMemories()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <div class="stats-row" *ngIf="stats">
+    <div class="stat-card">
+      <span class="stat-value">{{ stats.total || 0 }}</span>
+      <span class="stat-label">Total Memories</span>
+    </div>
+    <div class="stat-card" *ngIf="stats.semantic != null">
+      <span class="stat-value">{{ stats.semantic || 0 }}</span>
+      <span class="stat-label">Semantic</span>
+    </div>
+    <div class="stat-card" *ngIf="stats.episodic != null">
+      <span class="stat-value">{{ stats.episodic || 0 }}</span>
+      <span class="stat-label">Episodic</span>
+    </div>
+    <div class="stat-card" *ngIf="stats.unique_users != null">
+      <span class="stat-value">{{ stats.unique_users || 0 }}</span>
+      <span class="stat-label">Users</span>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <input class="filter-input search-input" type="text"
+           placeholder="Search memories by key or value..."
+           [(ngModel)]="searchQuery" (input)="onSearchChange()">
+    <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+      <option value="">All Categories</option>
+      <option *ngFor="let cat of categories" [value]="cat">{{ cat | titlecase }}</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="selectedLayer" (change)="applyFilters()">
+      <option value="">All Layers</option>
+      <option *ngFor="let layer of layers" [value]="layer">{{ layer | titlecase }}</option>
+    </select>
+    <span class="filter-count">{{ filteredMemories.length }} of {{ memories.length }}</span>
+  </div>
+
+  <div class="skeleton-grid" *ngIf="isLoading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="skeleton-line w60"></div>
+      <div class="skeleton-line w100"></div>
+      <div class="skeleton-line w40"></div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && filteredMemories.length === 0">
+    <div class="empty-icon">💾</div>
+    <h5>No Memories Found</h5>
+    <p class="text-muted" *ngIf="searchQuery || selectedCategory || selectedLayer">Try adjusting your filters.</p>
+    <p class="text-muted" *ngIf="!searchQuery && !selectedCategory && !selectedLayer">The memory store is empty.</p>
+  </div>
+
+  <div class="memory-grid" *ngIf="!isLoading && filteredMemories.length > 0">
+    <div class="memory-card" *ngFor="let mem of filteredMemories">
+      <div class="memory-header">
+        <div class="memory-key">
+          <span class="cat-icon">{{ getCategoryIcon(mem.category) }}</span>
+          <span class="key-text">{{ mem.key }}</span>
+        </div>
+        <div class="memory-actions">
+          <span class="layer-badge" [ngClass]="getLayerColor(mem.layer)">{{ mem.layer }}</span>
+          <button class="btn-icon-sm" (click)="deleteMemory(mem, $event)" title="Delete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="memory-value">{{ mem.value }}</div>
+
+      <div class="memory-footer">
+        <span class="cat-badge">{{ mem.category }}</span>
+        <span class="mem-meta" *ngIf="mem.userId || mem.user_id">user: {{ mem.userId || mem.user_id }}</span>
+        <span class="mem-meta">{{ timeAgo(mem.updatedAt || mem.updated_at) }}</span>
+        <span class="mem-meta" *ngIf="mem.accessCount || mem.access_count">×{{ mem.accessCount || mem.access_count }}</span>
+      </div>
+    </div>
+  </div>
+</div>

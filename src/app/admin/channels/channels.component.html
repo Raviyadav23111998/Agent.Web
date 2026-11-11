@@ -1,0 +1,220 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Channels</h1>
+      <p>Deploy your AI agent to Microsoft Teams, your website, VS Code, and Visual Studio — each package is configured for <strong>{{ tenantDomain }}</strong>.</p>
+    </div>
+  </div>
+
+  <div class="channels-grid">
+
+    <section class="channel-card">
+      <div class="channel-head">
+        <span class="channel-logo teams">T</span>
+        <div>
+          <h2>Microsoft Teams</h2>
+          <p>A native Teams bot for your organisation.</p>
+        </div>
+        <span class="pill" *ngIf="!loading"
+              [class.ok]="teams?.ready" [class.warn]="!teams?.ready">
+          {{ teams?.ready ? 'Ready' : 'Setup required' }}
+        </span>
+      </div>
+
+      <div class="channel-body" *ngIf="!loading">
+        <ol class="steps">
+          <li [class.done]="teams?.m365Connected">
+            <strong>Connect Microsoft 365</strong> — the bot uses your own Azure AD app registration.
+            <span class="muted" *ngIf="!teams?.m365Connected">→ Connections → Microsoft 365</span>
+            <span class="ok-text" *ngIf="teams?.m365Connected">Connected ✓ (app {{ teams?.botClientId }})</span>
+          </li>
+          <li>
+            <strong>Point your Azure Bot's messaging endpoint</strong> to:
+            <div class="copy-row">
+              <code>{{ teams?.messagingEndpoint }}</code>
+              <button class="btn-ghost" (click)="copy(teams!.messagingEndpoint, 'Endpoint')">Copy</button>
+            </div>
+          </li>
+          <li><strong>Download the app below</strong> and upload the .zip in Teams → Apps → Manage your apps → Upload a custom app.</li>
+        </ol>
+
+        <button class="btn-primary" [disabled]="!teams?.ready || downloading" (click)="downloadTeams()">
+          <span *ngIf="!downloading">⬇ Download Teams app</span>
+          <span *ngIf="downloading">Building…</span>
+        </button>
+        <p class="hint" *ngIf="!teams?.ready">Connect Microsoft 365 to enable the download.</p>
+      </div>
+
+      <div class="channel-body" *ngIf="loading"><div class="skeleton-line w80"></div><div class="skeleton-line w60"></div></div>
+    </section>
+
+    <section class="channel-card">
+      <div class="channel-head">
+        <span class="channel-logo web">&lt;/&gt;</span>
+        <div>
+          <h2>Web Chatbot</h2>
+          <p>Embed a chat widget on any website.</p>
+        </div>
+        <span class="pill ok">Available</span>
+      </div>
+      <div class="channel-body">
+        <p>Create an integration under <a routerLink="/admin/integrations">Embed Integrations</a> to get a publishable key, then embed:</p>
+        <div class="copy-row block">
+          <code>{{ botEmbedSnippet }}</code>
+          <button class="btn-ghost" (click)="copy(botEmbedSnippet, 'Snippet')">Copy</button>
+        </div>
+        <p class="hint">The <code>?tenant={{ tenantDomain }}</code> routes the embed to your tenant automatically.</p>
+      </div>
+    </section>
+
+    <section class="channel-card">
+      <div class="channel-head">
+        <span class="channel-logo telegram">✈</span>
+        <div>
+          <h2>Telegram</h2>
+          <p>Chat with your agent from your own personal bot.</p>
+        </div>
+        <span class="pill" *ngIf="!telegramLoading"
+              [class.ok]="telegramState === 'connected'"
+              [class.warn]="telegramState !== 'connected'">
+          {{ telegramState === 'connected' ? 'Connected' :
+             (telegramState === 'error' ? 'Check token' : 'Not connected') }}
+        </span>
+      </div>
+
+      <div class="channel-body" *ngIf="!telegramLoading">
+        <ol class="steps">
+          <li [class.done]="telegramConn">
+            <strong>Create a bot</strong> — in Telegram, message
+            <a href="https://t.me/BotFather" target="_blank" rel="noopener"><strong>&#64;BotFather</strong></a>,
+            send <code>/newbot</code>, and copy the <strong>bot token</strong> it gives you.
+          </li>
+
+          <li *ngIf="!telegramConn">
+            <strong>Connect your bot</strong> — paste the token here. It's stored encrypted and
+            only ever used to run your personal bot.
+            <div class="copy-row" style="margin-top:8px">
+              <input class="token-input" type="password" autocomplete="off"
+                     placeholder="123456789:ABCdef…" [(ngModel)]="telegramToken"
+                     (keyup.enter)="connectTelegram()" />
+              <button class="btn-primary" [disabled]="telegramSaving || !telegramToken.trim()"
+                      (click)="connectTelegram()">
+                <span *ngIf="!telegramSaving">Connect bot</span>
+                <span *ngIf="telegramSaving">Connecting…</span>
+              </button>
+            </div>
+          </li>
+
+          <li *ngIf="telegramConn" class="done">
+            <strong>Bot connected</strong>
+            <span class="ok-text" *ngIf="telegramState === 'connected'">
+              ✓ {{ telegramBotName ? '@' + telegramBotName : telegramConn.label }} is live
+            </span>
+            <span class="muted" *ngIf="telegramState === 'error'">
+              — the last test failed. Re-copy the token from &#64;BotFather and reconnect.
+            </span>
+            <div class="copy-row" style="margin-top:8px">
+              <button class="btn-ghost" [disabled]="telegramTesting" (click)="testTelegram()">
+                <span *ngIf="!telegramTesting">Test connection</span>
+                <span *ngIf="telegramTesting">Testing…</span>
+              </button>
+              <button class="btn-ghost danger" (click)="disconnectTelegram()">Disconnect</button>
+            </div>
+          </li>
+
+          <li>Open your bot in Telegram and start chatting — it replies as your agent within a
+            minute of connecting. Each person connects their <em>own</em> bot, so it always runs as you.</li>
+        </ol>
+      </div>
+
+      <div class="channel-body" *ngIf="telegramLoading">
+        <div class="skeleton-line w80"></div><div class="skeleton-line w60"></div>
+      </div>
+    </section>
+
+    <section class="channel-card">
+      <div class="channel-head">
+        <span class="channel-logo vscode">VSC</span>
+        <div>
+          <h2>VS Code</h2>
+          <p>The agent inside your editor.</p>
+        </div>
+        <span class="pill ok">Available</span>
+      </div>
+      <div class="channel-body">
+        <ol class="steps">
+          <li>
+            <strong>Download the extension</strong> and install it in VS Code →
+            Extensions (⋯ menu) → <em>Install from VSIX…</em>
+            <span class="muted">— or run <code>code --install-extension &lt;file&gt;.vsix</code></span>
+            <div class="copy-row" style="margin-top:8px">
+              <button class="btn-primary" [disabled]="!vscode?.available || vscodeDownloading" (click)="downloadVscode()">
+                <span *ngIf="!vscodeDownloading">⬇ Download .vsix<span *ngIf="vscode?.version"> (v{{ vscode?.version }})</span></span>
+                <span *ngIf="vscodeDownloading">Downloading…</span>
+              </button>
+            </div>
+            <p class="hint" *ngIf="vscode && !vscode.available">
+              Not published here yet — also available on the
+              <a [href]="vscodeMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+            </p>
+            <p class="hint" *ngIf="vscode?.available">
+              Prefer the store? It's also on the
+              <a [href]="vscodeMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+            </p>
+          </li>
+          <li>Set <code>agent.tenantDomain</code> in VS Code settings to:
+            <div class="copy-row">
+              <code>{{ tenantDomain }}</code>
+              <button class="btn-ghost" (click)="copy(tenantDomain, 'Tenant domain')">Copy</button>
+            </div>
+          </li>
+          <li>Sign in with your agent credentials.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="channel-card">
+      <div class="channel-head">
+        <span class="channel-logo visualstudio">VS</span>
+        <div>
+          <h2>Visual Studio</h2>
+          <p>The agent inside Visual Studio 2022.</p>
+        </div>
+        <span class="pill" [class.ok]="visualstudio?.available" [class.warn]="visualstudio && !visualstudio.available">
+          {{ visualstudio?.available ? 'Available' : 'Coming soon' }}
+        </span>
+      </div>
+      <div class="channel-body">
+        <ol class="steps">
+          <li>
+            <strong>Download the extension</strong> and install it by double-clicking the
+            <code>.vsix</code> (VSIX Installer), or in Visual Studio →
+            <em>Extensions → Manage Extensions</em>.
+            <div class="copy-row" style="margin-top:8px">
+              <button class="btn-primary" [disabled]="!visualstudio?.available || visualstudioDownloading" (click)="downloadVisualStudio()">
+                <span *ngIf="!visualstudioDownloading">⬇ Download .vsix<span *ngIf="visualstudio?.version"> (v{{ visualstudio?.version }})</span></span>
+                <span *ngIf="visualstudioDownloading">Downloading…</span>
+              </button>
+            </div>
+            <p class="hint" *ngIf="visualstudio && !visualstudio.available">
+              Not published here yet — also available on the
+              <a [href]="visualstudioMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+            </p>
+            <p class="hint" *ngIf="visualstudio?.available">
+              Prefer the store? It's also on the
+              <a [href]="visualstudioMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+            </p>
+          </li>
+          <li>Open <em>Tools → Options → Agent</em> and set the API / tenant domain to:
+            <div class="copy-row">
+              <code>{{ tenantDomain }}</code>
+              <button class="btn-ghost" (click)="copy(tenantDomain, 'Tenant domain')">Copy</button>
+            </div>
+          </li>
+          <li>Open the agent (<em>View → Other Windows → Antigravity Agent</em>) and sign in.</li>
+        </ol>
+      </div>
+    </section>
+
+  </div>
+</div>

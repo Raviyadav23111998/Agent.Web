@@ -1,0 +1,32 @@
+.brand-card {
+  background: var(--kendo-color-app-surface, #fff);
+  border: 1px solid var(--kendo-color-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 640px;
+}
+
+.logo-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+.logo-preview {
+  width: 112px; height: 112px; border-radius: 14px; flex-shrink: 0;
+  border: 1px solid var(--kendo-color-border, #e2e8f0);
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: 10px;
+}
+.logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.logo-preview.empty,
+.logo-preview .muted {
+  color: var(--text-muted, #94a3b8); font-size: 12px;
+  background: var(--kendo-color-base-subtle, #f8fafc);
+}
+
+.logo-actions { display: flex; flex-direction: column; gap: 6px; }
+.btn-primary {
+  display: inline-block; cursor: pointer;
+  background: var(--kendo-color-primary, #1976d2); color: #fff;
+  border: none; border-radius: 8px; padding: 10px 18px;
+  font-size: 14px; font-weight: 600; width: fit-content;
+}
+.btn-primary.disabled { opacity: 0.5; cursor: not-allowed; }
+.hint { font-size: 12px; color: var(--text-muted, #94a3b8); margin: 4px 0 0; max-width: 380px; }

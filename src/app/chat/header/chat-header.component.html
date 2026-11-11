@@ -1,0 +1,121 @@
+<div class="chat-header">
+
+  <button class="btn-icon" (click)="toggleSidebar.emit()" title="Toggle sidebar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <div class="model-selector" (click)="toggleDropdown()">
+    <span class="model-label">{{ currentLabel }}</span>
+    <svg class="chevron" [class.open]="isDropdownOpen"
+         width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+
+    <div class="dropdown" *ngIf="isDropdownOpen" (click)="$event.stopPropagation()">
+      <div class="dropdown-header">Select Model</div>
+
+      <button class="dropdown-item" [class.active]="!selectedAgentId" (click)="selectDefault()">
+        <div class="item-icon"><app-icon name="bot"></app-icon></div>
+        <div class="item-info">
+          <span class="item-name">{{ tenantConfig.tenantInfo.orgName || 'Agent' }}</span>
+          <span class="item-desc">Default assistant with all tools</span>
+        </div>
+        <svg *ngIf="!selectedAgentId" class="check" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </button>
+
+      <ng-container *ngIf="agents.length > 0">
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header">Custom Agents</div>
+        <button class="dropdown-item"
+                *ngFor="let agent of agents"
+                [class.active]="selectedAgentId === agent.agentId"
+                (click)="selectAgent(agent)">
+          <div class="item-icon"><app-icon name="bot"></app-icon></div>
+          <div class="item-info">
+            <span class="item-name">{{ agent.name }}</span>
+            <span class="item-desc">{{ agent.description || agent.model || 'Custom agent' }}</span>
+          </div>
+          <svg *ngIf="selectedAgentId === agent.agentId" class="check" width="16" height="16"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="header-actions">
+
+    <div class="conv-title-area" *ngIf="activeConversationId && conversationTitle">
+      <span class="conv-title" *ngIf="!isEditingTitle" (dblclick)="startEditTitle()"
+            title="Double-click to edit">
+        {{ conversationTitle }}
+      </span>
+      <input *ngIf="isEditingTitle"
+             class="title-input"
+             [(ngModel)]="conversationTitle"
+             (blur)="saveTitle()"
+             (keydown)="onTitleKeyDown($event)"
+             autofocus />
+    </div>
+
+    <!-- B6: show only the real token count. The per-message $ figure was
+         computed at raw, un-cached rates and materially overstated the real
+         (heavily cached) bill, so it is not surfaced here. -->
+    <ng-container *ngIf="(chatService.usage$ | async) as usage">
+      <div class="usage-meter" *ngIf="usage.tokens > 0"
+           title="Context tokens used in this conversation">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+        </svg>
+        <span class="usage-tokens">{{ formatTokens(usage.tokens) }} tok</span>
+      </div>
+    </ng-container>
+
+    <button class="btn-icon" (click)="themeService.toggleTheme()" [title]="(themeService.isDarkMode$ | async) ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      <ng-container *ngIf="themeService.isDarkMode$ | async; else lightModeIcon">
+
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </ng-container>
+      <ng-template #lightModeIcon>
+
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </ng-template>
+    </button>
+
+    <button class="btn-icon btn-new" (click)="newChat()" title="New Chat (Ctrl+Shift+N)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>

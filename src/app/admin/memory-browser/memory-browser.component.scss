@@ -1,0 +1,178 @@
+@import '../shared-admin';
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--kendo-color-on-app-surface);
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--kendo-color-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-count {
+  font-size: 0.78rem;
+  color: var(--kendo-color-subtle);
+  white-space: nowrap;
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.memory-card {
+  background: var(--kendo-color-app-surface);
+  border: 1px solid var(--kendo-color-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--kendo-color-border-alt);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.memory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.memory-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cat-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.key-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--kendo-color-on-app-surface);
+  font-family: var(--kendo-font-family-monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memory-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.layer-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.layer-semantic {
+    background: color-mix(in srgb, var(--kendo-color-primary) 10%, transparent);
+    color: var(--kendo-color-primary);
+  }
+  &.layer-episodic {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+  &.layer-session {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  &.layer-company {
+    background: color-mix(in srgb, var(--kendo-color-primary-hover) 10%, transparent);
+    color: var(--kendo-color-primary-hover);
+  }
+}
+
+.btn-icon-sm {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--kendo-color-subtle);
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(var(--kendo-color-error-rgb, 211, 47, 47), 0.08);
+    color: var(--kendo-color-error);
+  }
+}
+
+.memory-value {
+  font-size: 0.82rem;
+  color: var(--kendo-color-on-app-surface);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.memory-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cat-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  background: var(--kendo-color-base-subtle);
+  color: var(--kendo-color-subtle);
+  text-transform: capitalize;
+}
+
+.mem-meta {
+  font-size: 0.72rem;
+  color: var(--kendo-color-subtle);
+}
