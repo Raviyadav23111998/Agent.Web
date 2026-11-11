@@ -33,8 +33,8 @@ export class ChannelsComponent implements OnInit {
 
   tenantDomain = window.location.hostname;
   botEmbedSnippet = '';
-  vscodeMarketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=storeglance.antigravity-agent';
-  visualstudioMarketplaceUrl = 'https://marketplace.visualstudio.com/items?itemName=Storeglance.AntigravityAgent';
+  vscodeMarketplaceUrl = '';
+  visualstudioMarketplaceUrl = '';
 
   constructor(
     private svc: ChannelsService,
@@ -53,11 +53,11 @@ export class ChannelsComponent implements OnInit {
     });
     this.svc.getVscodeStatus().subscribe({
       next: (s) => { this.vscode = s; if (s.marketplaceUrl) { this.vscodeMarketplaceUrl = s.marketplaceUrl; } },
-      error: () => { /* card still shows the marketplace link */ },
+      error: () => { /* card shows the not-available hint */ },
     });
     this.svc.getVisualStudioStatus().subscribe({
       next: (s) => { this.visualstudio = s; if (s.marketplaceUrl) { this.visualstudioMarketplaceUrl = s.marketplaceUrl; } },
-      error: () => { /* card still shows the marketplace link */ },
+      error: () => { /* card shows the not-available hint */ },
     });
     this.loadTelegram();
   }
@@ -189,7 +189,7 @@ export class ChannelsComponent implements OnInit {
     this.vscodeDownloading = true;
     this.svc.downloadVscodeApp().subscribe({
       next: (res) => {
-        this.saveBlob(res, this.vscode?.filename || 'antigravity-agent.vsix');
+        this.saveBlob(res, this.vscode?.filename || 'storeglance-agent.vsix');
         this.vscodeDownloading = false;
         this.toastr.success('VS Code extension (.vsix) downloaded.');
       },
@@ -208,7 +208,7 @@ export class ChannelsComponent implements OnInit {
     this.visualstudioDownloading = true;
     this.svc.downloadVisualStudioApp().subscribe({
       next: (res) => {
-        this.saveBlob(res, this.visualstudio?.filename || 'AntigravityAgent.vsix');
+        this.saveBlob(res, this.visualstudio?.filename || 'StoreglanceAgent.vsix');
         this.visualstudioDownloading = false;
         this.toastr.success('Visual Studio extension (.vsix) downloaded.');
       },

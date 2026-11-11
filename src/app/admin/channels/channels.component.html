@@ -154,10 +154,9 @@
               </button>
             </div>
             <p class="hint" *ngIf="vscode && !vscode.available">
-              Not published here yet — also available on the
-              <a [href]="vscodeMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+              The VS Code extension hasn't been uploaded to this server yet. Ask your administrator to deploy it.
             </p>
-            <p class="hint" *ngIf="vscode?.available">
+            <p class="hint" *ngIf="vscodeMarketplaceUrl">
               Prefer the store? It's also on the
               <a [href]="vscodeMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
             </p>
@@ -197,10 +196,9 @@
               </button>
             </div>
             <p class="hint" *ngIf="visualstudio && !visualstudio.available">
-              Not published here yet — also available on the
-              <a [href]="visualstudioMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
+              The Visual Studio extension hasn't been uploaded to this server yet. Ask your administrator to deploy it.
             </p>
-            <p class="hint" *ngIf="visualstudio?.available">
+            <p class="hint" *ngIf="visualstudioMarketplaceUrl">
               Prefer the store? It's also on the
               <a [href]="visualstudioMarketplaceUrl" target="_blank" rel="noopener">Marketplace</a>.
             </p>
@@ -211,7 +209,7 @@
               <button class="btn-ghost" (click)="copy(tenantDomain, 'Tenant domain')">Copy</button>
             </div>
           </li>
-          <li>Open the agent (<em>View → Other Windows → Antigravity Agent</em>) and sign in.</li>
+          <li>Open the agent (<em>View → Other Windows → Storeglance Agent</em>) and sign in.</li>
         </ol>
       </div>
     </section>
