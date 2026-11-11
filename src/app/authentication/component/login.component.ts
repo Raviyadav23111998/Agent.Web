@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SharedDataService } from '../../services/shared-data.service';
@@ -57,7 +58,7 @@ export class LoginComponent implements OnInit {
     this.loadLanguage();
     await this.tenantConfig.loadTenantConfig();
 
-    const msalToken = await this.msalService.handleRedirect();
+    const msalToken = this.msEnabled ? await this.msalService.handleRedirect() : null;
 
     if (msalToken) {
 
@@ -128,6 +129,9 @@ export class LoginComponent implements OnInit {
       this.isLoading = false;
     }
   }
+
+  get msEnabled(): boolean { return !!environment.msalClientId; }
+  get googleEnabled(): boolean { return !!environment.googleClientId; }
 
   async MicrosoftLogin() {
     await this.msalService.login();

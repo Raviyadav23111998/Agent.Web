@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 export class TenantConfigService {
 
   private config: any = {
-    orgName: 'Agent',
+    orgName: 'Storeglance',
     logoUrl: '',
     email: '',
     phone: '',
@@ -33,7 +33,7 @@ export class TenantConfigService {
 
   async loadConfig(): Promise<void> {
     try {
-      const url = `${this.getMSystemsApiUrl()}/tenant-config/TenantConfig`;
+      const url = `${this.apiBase()}/TenantConfig`;
       const data: any = await this.http.get(url).toPromise();
       if (data) {
         this.config = { ...this.config, ...data };
@@ -65,14 +65,14 @@ export class TenantConfigService {
   getLogoUrl(): string {
     if (this.config.logoUrl) {
 
-      return `${this.getMSystemsApiUrl()}/tenant-config/TenantLogo?domain=${window.location.hostname}`;
+      return `${this.apiBase()}/TenantLogo`;
     }
     return 'assets/images/LOGO.png';
   }
 
-  private getMSystemsApiUrl(): string {
-
-    return environment.apiUrl.replace('/api/agent', '/api/master');
+  // Branding is served by the Agent API itself (standalone — no MSystem master).
+  private apiBase(): string {
+    return environment.apiUrl;
   }
 
   getThemeColor(): string { return this.config.themeColor || '#1976d2'; }
@@ -105,7 +105,7 @@ export class TenantConfigService {
         this.document.createElement('link');
       link.type = 'image/x-icon';
       link.rel = 'icon';
-      link.href = `${this.getMSystemsApiUrl()}/tenant-config/TenantLogo?domain=${window.location.hostname}`;
+      link.href = `${this.apiBase()}/TenantLogo`;
       this.document.head.appendChild(link);
     }
   }

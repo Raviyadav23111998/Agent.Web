@@ -1,3 +1,4 @@
+import { environment } from '../environments/environment';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,8 +23,10 @@ import { InterceptorService } from './services/interceptor.service';
 export function MSALInstanceFactory(): PublicClientApplication {
   return new PublicClientApplication({
     auth: {
-      clientId: 'b298d42b-29ef-4872-9a9a-11f1bc478826',
-      authority: 'https://login.microsoftonline.com/12eac042-63ed-4057-b753-c54bf57c3f0a',
+      // A syntactically valid placeholder keeps MSAL constructible when SSO is
+      // not configured; the login screen hides the button in that case.
+      clientId: environment.msalClientId || '00000000-0000-0000-0000-000000000000',
+      authority: environment.msalAuthority || 'https://login.microsoftonline.com/common',
       redirectUri: '/'
     }
   });

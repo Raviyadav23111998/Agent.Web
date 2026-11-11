@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class GoogleAuthService {
     form.setAttribute('action', oauth2Endpoint);
 
     const params: any = {
-      'client_id': 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+      'client_id': environment.googleClientId,
       'redirect_uri': window.location.origin + '/login',
       'response_type': 'token',
       'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
