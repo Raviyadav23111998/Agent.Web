@@ -10,7 +10,7 @@
     <div class="login-header">
       <div class="logo-icon custom-logo">
         <img [src]="tenantConfig.getLogoUrl()" alt="Logo"
-             onerror="this.onerror=null;this.src='assets/images/LOGO.png';" />
+             onerror="this.onerror=null;this.src='assets/images/LOGO.png?v=sg1';" />
       </div>
       <h1 class="brand-name">{{ tenantConfig.tenantInfo.orgName || 'Storeglance' }}</h1>
       <p class="brand-subtitle">{{ tenantConfig.tenantInfo.subdomain ? tenantConfig.tenantInfo.subdomain + ' Agent Platform' : 'AI Agent Platform' }}</p>

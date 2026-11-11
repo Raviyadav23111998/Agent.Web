@@ -67,7 +67,7 @@ export class TenantConfigService {
 
       return `${this.apiBase()}/TenantLogo`;
     }
-    return 'assets/images/LOGO.png';
+    return 'assets/images/LOGO.png?v=sg1';
   }
 
   // Branding is served by the Agent API itself (standalone — no MSystem master).
